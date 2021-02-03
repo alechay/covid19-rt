@@ -1,0 +1,172 @@
+---
+title: "Estimate Rt"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages
+```{r}
+library(tidyverse)
+library(readxl)
+library(EpiEstim)
+```
+
+
+## Load in data
+```{r}
+ontario <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Daily Cases_Ontario')
+peel <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Daily Cases_Peel')
+toronto <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Daily Cases_Toronto')
+waterloo <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Daily Cases_Waterloo')
+york <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Daily Cases_York')
+```
+
+## Set columnn type as date
+```{r}
+ontario$Date <- as.Date(ontario$Date)
+peel$Date <- as.Date(peel$Date)
+toronto$Date <- as.Date(toronto$Date)
+waterloo$Date <- as.Date(waterloo$Date)
+york$Date <- as.Date(york$Date)
+```
+
+ontario: 3/3/20 - 1/28/21  
+peel: 3/11/20 - 1/28/21  
+toronto: 3/3/20 - 1/28/21  
+waterloo: 3/10/20 - 1/28/21  
+york: 3/9/20 - 1/28/21  
+
+## Filter so that there are only consecutive dates
+```{r}
+oldnames = c("Date","Daily Cases")
+newnames = c("dates","I")
+
+ontario <- ontario %>% 
+  filter(Date > '2020-03-02') %>% 
+  rename_at(all_of(oldnames), ~ newnames)
+peel <- peel %>% 
+  filter(Date > '2020-03-10') %>% 
+  rename_at(all_of(oldnames), ~ newnames)
+toronto <- toronto %>% 
+  filter(Date > '2020-03-02') %>% 
+  rename_at(all_of(oldnames), ~ newnames)
+waterloo <- waterloo %>% 
+  filter(Date > '2020-03-09') %>% 
+  rename_at(all_of(oldnames), ~ newnames)
+york <- york %>% 
+  filter(Date > '2020-03-08') %>% 
+  rename_at(all_of(oldnames), ~ newnames)
+```
+
+## EpiEstim package (Cori et al., 2019, 2013; R Core Team, 2019)
+Use estimate R function with the following parameters:  
+- 7-day window (default) (Sanche et al. 2020)  
+- Parametric without uncertainty	
+- Serial interval mean: 5.2  
+- Serial interval std: 5.1 (He et al. 2020)  
+
+```{r}
+ont_R <- estimate_R(ontario, method = "parametric_si",
+                  config = make_config(list(
+                  mean_si = 5.2, std_si = 5.1)))
+peel_R <- estimate_R(peel, method = "parametric_si",
+                  config = make_config(list(
+                  mean_si = 5.2, std_si = 5.1)))
+tor_R <- estimate_R(toronto, method = "parametric_si",
+                  config = make_config(list(
+                  mean_si = 5.2, std_si = 5.1)))
+wat_R <- estimate_R(waterloo, method = "parametric_si",
+                  config = make_config(list(
+                  mean_si = 5.2, std_si = 5.1)))
+york_R <- estimate_R(york, method = "parametric_si",
+                  config = make_config(list(
+                  mean_si = 5.2, std_si = 5.1)))
+```
+
+## Ontario
+```{r}
+plot(ont_R, 'R')
+```
+
+## Peel
+```{r}
+plot(peel_R, 'R')
+```
+
+## Toronto
+```{r}
+plot(tor_R, 'R')
+```
+
+## Waterloo
+```{r}
+plot(wat_R, 'R')
+```
+
+## York
+```{r}
+plot(york_R, 'R')
+```
+
+```{r, include=FALSE}
+# Save plots
+
+png('Graphs/Ontario_R.png')
+plot(ont_R, 'R')
+dev.off()
+
+png('Graphs/Peel_R.png')
+plot(peel_R, 'R')
+dev.off()
+
+png('Graphs/Toronto_R.png')
+plot(tor_R, 'R')
+dev.off()
+
+png('Graphs/Waterloo_R.png')
+plot(wat_R, 'R')
+dev.off()
+
+png('Graphs/York_R.png')
+plot(york_R, 'R')
+dev.off()
+```
+
+```{r, include=FALSE}
+# Add dates to tables
+
+ont_R['R']$R <- ont_R['R']$R %>% 
+  add_column(date_start = ontario$dates[ont_R['R']$R$t_start],
+             date_end = ontario$dates[ont_R['R']$R$t_end])
+peel_R['R']$R <- peel_R['R']$R %>% 
+  add_column(date_start = peel$dates[peel_R['R']$R$t_start],
+             date_end = peel$dates[peel_R['R']$R$t_end])
+tor_R['R']$R <- tor_R['R']$R %>% 
+  add_column(date_start = toronto$dates[tor_R['R']$R$t_start],
+             date_end = toronto$dates[tor_R['R']$R$t_end])
+wat_R['R']$R <- wat_R['R']$R %>% 
+  add_column(date_start = waterloo$dates[wat_R['R']$R$t_start],
+             date_end = waterloo$dates[wat_R['R']$R$t_end])
+york_R['R']$R <- york_R['R']$R %>% 
+  add_column(date_start = york$dates[york_R['R']$R$t_start],
+             date_end = york$dates[york_R['R']$R$t_end])
+```
+
+```{r, include=FALSE}
+# Save estimated R to csv
+
+write_csv(ont_R['R']$R, 'Estimated_R/ontario_R.csv')
+write_csv(peel_R['R']$R, 'Estimated_R/peel_R.csv')
+write_csv(tor_R['R']$R, 'Estimated_R/tor_R.csv')
+write_csv(wat_R['R']$R, 'Estimated_R/wat_R.csv')
+write_csv(york_R['R']$R, 'Estimated_R/york_R.csv')
+```
+
