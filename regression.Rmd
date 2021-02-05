@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(segmented)
+library(readxl)
 ```
 
 ## Load data
@@ -20,6 +21,18 @@ peel <- read_csv('Estimated_R/peel_R.csv')
 toronto <- read_csv('Estimated_R/tor_R.csv')
 waterloo <- read_csv('Estimated_R/wat_R.csv')
 york <- read_csv('Estimated_R/york_R.csv')
+```
+```{r}
+o_tl <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Ontario Timeline')
+p_tl <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Peel Timeline')
+t_tl <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Toronto Timeline')
+w_tl <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Waterloo Timeline')
+y_tl <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'York Timeline')
 ```
 
 ## Function
@@ -112,6 +125,12 @@ dates <-  as.Date(c('2020-03-23', '2020-05-14', '2020-06-08', '2020-07-13', '202
 
 res <- segmented_regressions(ontario, 'Ontario fixed breaks', dates)
 df <- regression_eqs(ontario, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/Ontario_Fixed_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/Ontario_Fixed_Breaks.csv')
 res$plot
 df
 ```
@@ -119,6 +138,12 @@ df
 ```{r}
 res <- segmented_regressions(ontario, 'Ontario default breaks')
 df <- regression_eqs(ontario, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/Ontario_Default_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/Ontario_Default_Breaks.csv')
 res$plot
 df
 ```
@@ -139,6 +164,12 @@ dates <- as.Date(c('2020-03-26', '2020-06-22', '2020-07-29', '2020-10-11', '2020
 
 res <- segmented_regressions(peel, 'Peel fixed breaks', dates)
 df <- regression_eqs(peel, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/Peel_Fixed_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/Peel_Fixed_Breaks.csv')
 res$plot
 df
 ```
@@ -146,6 +177,12 @@ df
 ```{r}
 res <- segmented_regressions(peel, 'Peel default breaks')
 df <- regression_eqs(peel, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/Peel_Default_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/Peel_Default_Breaks.csv')
 res$plot
 df
 ```
@@ -164,6 +201,12 @@ dates <- as.Date(c('2020-03-23', '2020-06-24', '2020-11-14',  '2020-12-14'))
 
 res <- segmented_regressions(toronto, 'Toronto fixed breaks', dates)
 df <- regression_eqs(toronto, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/Toronto_Fixed_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/Toronto_Fixed_Breaks.csv')
 res$plot
 df
 ```
@@ -171,6 +214,12 @@ df
 ```{r}
 res <- segmented_regressions(toronto, 'Toronto default breaks')
 df <- regression_eqs(toronto, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/Toronto_Default_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/Toronto_Default_Breaks.csv')
 res$plot
 df
 ```
@@ -194,6 +243,12 @@ dates <- as.Date(c('2020-03-25', '2020-06-12', '2020-07-13', '2020-09-22', '2020
 
 res <- segmented_regressions(waterloo, 'Waterloo fixed dates', dates)
 df <- regression_eqs(waterloo, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/Waterloo_Fixed_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/Waterloo_Fixed_Breaks.csv')
 res$plot
 df
 ```
@@ -201,6 +256,12 @@ df
 ```{r}
 res <- segmented_regressions(waterloo, 'Waterloo default dates')
 df <- regression_eqs(waterloo, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/Waterloo_Default_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/Waterloo_Default_Breaks.csv')
 res$plot
 df
 ```
@@ -222,6 +283,12 @@ dates <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020
 
 res <- segmented_regressions(york, 'York fixed dates', dates)
 df <- regression_eqs(york, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/York_Fixed_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/York_Fixed_Breaks.csv')
 res$plot
 df
 ```
@@ -229,8 +296,12 @@ df
 ```{r}
 res <- segmented_regressions(york, 'York default dates')
 df <- regression_eqs(york, res$my.seg, res$breaks)
+ggsave('Breakpoint_Graphs/York_Default_Breaks.png', 
+       res$plot,
+       height = 5,
+       width = 10,
+       units = 'in')
+write_csv(df, 'Breakpoint_Data/York_Default_Breaks.csv')
 res$plot
 df
 ```
-
-
