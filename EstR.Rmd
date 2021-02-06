@@ -119,24 +119,44 @@ plot(york_R, 'R')
 ```{r, include=FALSE}
 # Save plots
 
-png('Graphs/Ontario_R.png')
+png('Estimated_R/Ontario_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 72)
 plot(ont_R, 'R')
 dev.off()
 
-png('Graphs/Peel_R.png')
+png('Estimated_R/Peel_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 72)
 plot(peel_R, 'R')
 dev.off()
 
-png('Graphs/Toronto_R.png')
+png('Estimated_R/Toronto_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 72)
 plot(tor_R, 'R')
 dev.off()
 
-png('Graphs/Waterloo_R.png')
+png('Estimated_R/Waterloo_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 72)
 plot(wat_R, 'R')
 dev.off()
 
-png('Graphs/York_R.png')
-plot(york_R, 'R')
+png('Estimated_R/York_R.png')
+plot(york_R, 'R', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 72)
 dev.off()
 ```
 

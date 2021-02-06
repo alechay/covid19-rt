@@ -12,17 +12,20 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(segmented)
 library(readxl)
+library(ggpubr)
+library(ggrepel)
 ```
 
 ## Load data
 ```{r}
+# Rt data
 ontario <- read_csv('Estimated_R/ontario_R.csv')
 peel <- read_csv('Estimated_R/peel_R.csv')
 toronto <- read_csv('Estimated_R/tor_R.csv')
 waterloo <- read_csv('Estimated_R/wat_R.csv')
 york <- read_csv('Estimated_R/york_R.csv')
-```
-```{r}
+
+# Timeline data
 o_tl <- read_excel('Mobility&Rt January 30.xlsx', 
                    sheet = 'Ontario Timeline')
 p_tl <- read_excel('Mobility&Rt January 30.xlsx', 
@@ -35,8 +38,12 @@ y_tl <- read_excel('Mobility&Rt January 30.xlsx',
                    sheet = 'York Timeline')
 ```
 
-## Function
+## Functions
 ```{r}
+# create segmented regressions
+# input Rt data, plot name, and breakpoints (if available)
+# output segments, plot, and breakpoints
+
 segmented_regressions <- function(data, name, breaks=NULL) {
 
   # make linear regression for entire data
@@ -49,7 +56,7 @@ segmented_regressions <- function(data, name, breaks=NULL) {
   } else {
     my.seg <- segmented(my.lm,
                         seg.Z = ~ date_start,
-                        fixed.psi = list(date_start=breaks))
+                        fixed.psi = list(date_start=breaks$Date))
   }
   
   # get the fitted data
@@ -62,8 +69,20 @@ segmented_regressions <- function(data, name, breaks=NULL) {
     geom_line(my.model, 
               mapping=aes(x = date_start, y = Mean_R),
               color='red') +
-    geom_vline(xintercept = breaks, linetype = "dashed") +
     labs(title=name)
+  if (is.numeric(breaks)) {
+    p <- p + 
+      geom_vline(xintercept = breaks,
+                 linetype = "dashed")
+  } else {
+    p <- p +
+      geom_vline(breaks, 
+                 mapping = aes(xintercept=Date), 
+                 linetype = "dashed") +
+      geom_label_repel(breaks,
+                       mapping=aes(label=Milestone,x=Date,y=3.5),
+                       size=2)
+  }
   
   return(list(my.seg=my.seg, plot=p, breaks=breaks))
 }
@@ -87,7 +106,7 @@ regression_eqs <- function(data, my.seg, breaks) {
   new_dates <- c(first, last, calc)
   # append to known dates and sort
   if(!is.numeric(breaks)){
-    segs <- sort(append(breaks, new_dates))
+    segs <- sort(append(breaks$Date, new_dates))
   } else {
     segs <- sort(new_dates)
   }
@@ -104,7 +123,7 @@ regression_eqs <- function(data, my.seg, breaks) {
 ## Ontario
 Data starts on 3/4/20
 Date	Milestone  
-<!-- 3/17/20	Emergency declared   -->
+3/17/20	Emergency declared
 3/23/20	Closure of all non essential business  
 <!-- 4/14/20	Extended state of Emergency for further 4 weeks   -->
 <!-- 5/6/20	Emergency extended again upto 19/05/20  -->
@@ -121,30 +140,37 @@ Date	Milestone
 
 ```{r}
 # get list of break points
-dates <-  as.Date(c('2020-03-23', '2020-05-14', '2020-06-08', '2020-07-13', '2020-09-28', '2020-12-14', '2020-12-26'))
+dates <-  as.Date(c('2020-03-17', '2020-03-23', '2020-05-14', '2020-06-08', '2020-07-13', '2020-09-28', '2020-12-14', '2020-12-26'))
 
-res <- segmented_regressions(ontario, 'Ontario fixed breaks', dates)
+breaks <- o_tl %>% 
+  mutate(Date = as.Date(Date)) %>% 
+  filter(Date %in% dates) %>% 
+  mutate(Milestone = paste(Date, Milestone, sep='\n'))
+
+res <- segmented_regressions(ontario, 'Ontario fixed breaks', breaks)
 df <- regression_eqs(ontario, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/Ontario_Fixed_Breaks.png', 
+ggsave('Breakpoint_Analysis/Fixed/Ontario/Ontario_Fixed_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/Ontario_Fixed_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Fixed/Ontario/Ontario_Fixed_Breaks.csv')
+ont_fix_plot <- res$plot
+ont_fix_plot
 df
 ```
 
 ```{r}
 res <- segmented_regressions(ontario, 'Ontario default breaks')
 df <- regression_eqs(ontario, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/Ontario_Default_Breaks.png', 
+ggsave('Breakpoint_Analysis/Default/Ontario/Ontario_Default_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/Ontario_Default_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Default/Ontario/Ontario_Default_Breaks.csv')
+ont_def_plot <- res$plot
+ont_def_plot
 df
 ```
 
@@ -162,65 +188,79 @@ Date	Milestone
 ```{r}
 dates <- as.Date(c('2020-03-26', '2020-06-22', '2020-07-29', '2020-10-11', '2020-11-07', '2020-12-14'))
 
-res <- segmented_regressions(peel, 'Peel fixed breaks', dates)
+breaks <- p_tl %>% 
+  mutate(Date = as.Date(Date)) %>% 
+  filter(Date %in% dates) %>% 
+  mutate(Milestone = paste(Date, Milestone, sep='\n'))
+
+res <- segmented_regressions(peel, 'Peel fixed breaks', breaks)
 df <- regression_eqs(peel, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/Peel_Fixed_Breaks.png', 
+ggsave('Breakpoint_Analysis/Fixed/Peel/Peel_Fixed_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/Peel_Fixed_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Fixed/Peel/Peel_Fixed_Breaks.csv')
+peel_fix_plot <- res$plot
+peel_fix_plot
 df
 ```
 
 ```{r}
 res <- segmented_regressions(peel, 'Peel default breaks')
 df <- regression_eqs(peel, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/Peel_Default_Breaks.png', 
+ggsave('Breakpoint_Analysis/Default/Peel/Peel_Default_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/Peel_Default_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Default/Peel/Peel_Default_Breaks.csv')
+peel_def_plot <- res$plot
+peel_def_plot
 df
 ```
 
 ## Toronto
 Data starts on 3/4/20
 Date	Milestone  
-<!-- 3/17/20	State of Emergency declared   -->
+3/17/20	State of Emergency declared
 3/23/20	City hall and civic centres closed  
 6/24/20	enters Stage 2  
 11/14/20	Orange  
-<!-- 11/20/20	Red   -->
+11/20/20	Red
 12/14/20	Grey  
 ```{r}
-dates <- as.Date(c('2020-03-23', '2020-06-24', '2020-11-14',  '2020-12-14'))
+dates <- as.Date(c('2020-03-17','2020-03-23', '2020-06-24', '2020-11-14', '2020-11-20','2020-12-14'))
 
-res <- segmented_regressions(toronto, 'Toronto fixed breaks', dates)
+breaks <- t_tl %>% 
+  mutate(Date = as.Date(Date)) %>% 
+  filter(Date %in% dates) %>% 
+  mutate(Milestone = paste(Date, Milestone, sep='\n'))
+
+res <- segmented_regressions(toronto, 'Toronto fixed breaks', breaks)
 df <- regression_eqs(toronto, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/Toronto_Fixed_Breaks.png', 
+ggsave('Breakpoint_Analysis/Fixed/Toronto/Toronto_Fixed_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/Toronto_Fixed_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Fixed/Toronto/Toronto_Fixed_Breaks.csv')
+tor_fix_plot <- res$plot
+tor_fix_plot
 df
 ```
 
 ```{r}
 res <- segmented_regressions(toronto, 'Toronto default breaks')
 df <- regression_eqs(toronto, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/Toronto_Default_Breaks.png', 
+ggsave('Breakpoint_Analysis/Default/Toronto/Toronto_Default_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/Toronto_Default_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Default/Toronto/Toronto_Default_Breaks.csv')
+tor_def_plot <- res$plot
+tor_def_plot
 df
 ```
 
@@ -228,7 +268,7 @@ df
 Data starts 3/11/20
 Date	Milestone  
 <!-- 3/3/20	Region's first Case   -->
-<!-- 3/17/20	State of Emergency declared   -->
+3/17/20	State of Emergency declared
 3/25/20	Region's municipalities declare their own State of Emergency  
 6/12/20	Move into Stage 2  
 7/13/20	Move into Stage 3  
@@ -239,30 +279,37 @@ Date	Milestone
 <!-- 11/23/20	Red   -->
 12/26/20	Grey
 ```{r}
-dates <- as.Date(c('2020-03-25', '2020-06-12', '2020-07-13', '2020-09-22', '2020-11-03', '2020-11-16', '2020-12-26'))
+dates <- as.Date(c('2020-03-17','2020-03-25', '2020-06-12', '2020-07-13', '2020-09-22', '2020-11-03', '2020-11-16', '2020-12-26'))
 
-res <- segmented_regressions(waterloo, 'Waterloo fixed dates', dates)
+breaks <- w_tl %>% 
+  mutate(Date = as.Date(Date)) %>% 
+  filter(Date %in% dates) %>% 
+  mutate(Milestone = paste(Date, Milestone, sep='\n'))
+
+res <- segmented_regressions(waterloo, 'Waterloo fixed dates', breaks)
 df <- regression_eqs(waterloo, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/Waterloo_Fixed_Breaks.png', 
+ggsave('Breakpoint_Analysis/Fixed/Waterloo/Waterloo_Fixed_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/Waterloo_Fixed_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Fixed/Waterloo/Waterloo_Fixed_Breaks.csv')
+wat_fix_plot <- res$plot
+wat_fix_plot
 df
 ```
 
 ```{r}
 res <- segmented_regressions(waterloo, 'Waterloo default dates')
 df <- regression_eqs(waterloo, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/Waterloo_Default_Breaks.png', 
+ggsave('Breakpoint_Analysis/Default/Waterloo/Waterloo_Default_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/Waterloo_Default_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Default/Waterloo/Waterloo_Default_Breaks.csv')
+wat_def_plot <- res$plot
+wat_def_plot
 df
 ```
 
@@ -276,32 +323,57 @@ Date	Milestone
 7/24/20	Stage 3 Reopening  
 10/19/20	Modified Stage 2  
 11/6/20	Orange Level  
-<!-- 11/16/20	Red Level   -->
+11/16/20	Red Level
 12/14/20	Grey Level  
 ```{r}
-dates <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-10-19', '2020-11-06', '2020-12-14'))
+dates <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-10-19', '2020-11-06', '2020-11-16','2020-12-14'))
 
-res <- segmented_regressions(york, 'York fixed dates', dates)
+breaks <- y_tl %>% 
+  mutate(Date = as.Date(Date)) %>% 
+  filter(Date %in% dates) %>% 
+  mutate(Milestone = paste(Date, Milestone, sep='\n'))
+
+res <- segmented_regressions(york, 'York fixed dates', breaks)
 df <- regression_eqs(york, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/York_Fixed_Breaks.png', 
+ggsave('Breakpoint_Analysis/Fixed/York/York_Fixed_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/York_Fixed_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Fixed/York/York_Fixed_Breaks.csv')
+york_fix_plot <- res$plot
+york_fix_plot
 df
 ```
 
 ```{r}
 res <- segmented_regressions(york, 'York default dates')
 df <- regression_eqs(york, res$my.seg, res$breaks)
-ggsave('Breakpoint_Graphs/York_Default_Breaks.png', 
+ggsave('Breakpoint_Analysis/Default/York/York_Default_Breaks.png', 
        res$plot,
-       height = 5,
-       width = 10,
+       height = 8.5,
+       width = 11,
        units = 'in')
-write_csv(df, 'Breakpoint_Data/York_Default_Breaks.csv')
-res$plot
+write_csv(df, 'Breakpoint_Analysis/Default/York/York_Default_Breaks.csv')
+york_def_plot <- res$plot
+york_def_plot
 df
 ```
+
+```{r}
+fixed <- ggarrange(ont_fix_plot, peel_fix_plot, tor_fix_plot, wat_fix_plot, york_fix_plot,
+          ncol=1)
+default <- ggarrange(ont_def_plot, peel_def_plot, tor_def_plot, wat_def_plot, york_def_plot,
+          ncol=1)
+ggsave('Breakpoint_Analysis/Fixed/Fixed.png', 
+       fixed,
+       height = 11,
+       width = 8.5,
+       units = 'in')
+ggsave('Breakpoint_Analysis/Default/Default.png', 
+       default,
+       height = 11,
+       width = 8.5,
+       units = 'in')
+```
+
