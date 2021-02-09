@@ -68,24 +68,37 @@ segmented_regressions <- function(data, name, breaks=NULL) {
     geom_line() +
     geom_line(my.model, 
               mapping=aes(x = date_start, y = Mean_R),
-              color='red') +
-    labs(title=name)
-  if (is.numeric(breaks)) {
-    p <- p + 
-      geom_vline(xintercept = breaks,
-                 linetype = "dashed")
-  } else {
-    p <- p +
-      geom_vline(breaks, 
-                 mapping = aes(xintercept=Date), 
-                 linetype = "dashed") +
-      geom_label_repel(breaks,
-                       mapping=aes(label=Milestone,x=Date,y=3.5),
-                       size=2)
-  }
+              color='blue') +
+    labs(title=name) +
+    xlab('Date')
   
   return(list(my.seg=my.seg, plot=p, breaks=breaks))
 }
+```
+
+```{r}
+# annotate_plot <- function(plot, breaks, timeline) {
+#   
+#   if (is.numeric(breaks)) {
+#     p <- plot + 
+#       geom_vline(xintercept = breaks,
+#                  linetype = "dashed")
+#   } else {
+#     p <- plot +
+#       geom_rect(timeline,
+#                 mapping = aes(xmin=break_start, xmax=break_end,
+#                               ymin=-Inf, ymax=+Inf,
+#                               color=restrictions)) +
+#       geom_vline(breaks, 
+#                  mapping = aes(xintercept=Date), 
+#                  linetype = "dashed") +
+#       geom_label_repel(breaks,
+#                        mapping=aes(label=Milestone,x=Date,y=3.5),
+#                        size=2)
+#   }
+#   
+#   return(p)
+# }
 ```
 
 ```{r}
@@ -147,21 +160,41 @@ breaks <- o_tl %>%
   filter(Date %in% dates) %>% 
   mutate(Milestone = paste(Date, Milestone, sep='\n'))
 
-res <- segmented_regressions(ontario, 'Ontario fixed breaks', breaks)
+res <- segmented_regressions(ontario, 'Ontario', breaks)
 df <- regression_eqs(ontario, res$my.seg, res$breaks)
-ggsave('Breakpoint_Analysis/Fixed/Ontario/Ontario_Fixed_Breaks.png', 
-       res$plot,
+
+ont_fix_plot <- res$plot + 
+  annotate('rect', xmin=df$break_start[2], xmax=df$break_end[2],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.1) +
+  annotate('rect', xmin=df$break_start[3], xmax=df$break_end[4],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.3) +
+  annotate('rect', xmin=df$break_start[5], xmax=df$break_end[7],
+         ymin=-Inf, ymax=+Inf,
+         fill='green', alpha=0.2) +
+  annotate('rect', xmin=df$break_start[8], xmax=df$break_end[10],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.1) +
+  geom_vline(breaks,
+             mapping = aes(xintercept=Date),
+             linetype = "dashed") +
+  geom_label_repel(breaks,
+                   mapping=aes(label=Milestone,x=Date,y=3.5),
+                   size=2)
+  
+ggsave('Breakpoint_Analysis/Fixed/Ontario/Ontario_Fixed_Breaks.png',
+       ont_fix_plot,
        height = 8.5,
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Fixed/Ontario/Ontario_Fixed_Breaks.csv')
-ont_fix_plot <- res$plot
 ont_fix_plot
 df
 ```
 
 ```{r}
-res <- segmented_regressions(ontario, 'Ontario default breaks')
+res <- segmented_regressions(ontario, 'Ontario')
 df <- regression_eqs(ontario, res$my.seg, res$breaks)
 ggsave('Breakpoint_Analysis/Default/Ontario/Ontario_Default_Breaks.png', 
        res$plot,
@@ -169,7 +202,9 @@ ggsave('Breakpoint_Analysis/Default/Ontario/Ontario_Default_Breaks.png',
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Default/Ontario/Ontario_Default_Breaks.csv')
-ont_def_plot <- res$plot
+ont_def_plot <- res$plot +
+  geom_vline(xintercept = res$breaks,
+             linetype = "dashed")
 ont_def_plot
 df
 ```
@@ -193,21 +228,39 @@ breaks <- p_tl %>%
   filter(Date %in% dates) %>% 
   mutate(Milestone = paste(Date, Milestone, sep='\n'))
 
-res <- segmented_regressions(peel, 'Peel fixed breaks', breaks)
+res <- segmented_regressions(peel, 'Peel', breaks)
 df <- regression_eqs(peel, res$my.seg, res$breaks)
+
+peel_fix_plot <- res$plot +
+  annotate('rect', xmin=df$break_start[2], xmax=df$break_end[2],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.3) +
+  annotate('rect', xmin=df$break_start[3], xmax=df$break_end[5],
+           ymin=-Inf, ymax=+Inf,
+           fill='green', alpha=0.2) +
+  annotate('rect', xmin=df$break_start[6], xmax=df$break_end[8],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.1) +
+  geom_vline(breaks,
+             mapping = aes(xintercept=Date),
+             linetype = "dashed") +
+  geom_label_repel(breaks,
+                   mapping=aes(label=Milestone,x=Date,y=3.5),
+                   size=2)
+
 ggsave('Breakpoint_Analysis/Fixed/Peel/Peel_Fixed_Breaks.png', 
        res$plot,
        height = 8.5,
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Fixed/Peel/Peel_Fixed_Breaks.csv')
-peel_fix_plot <- res$plot
+
 peel_fix_plot
 df
 ```
 
 ```{r}
-res <- segmented_regressions(peel, 'Peel default breaks')
+res <- segmented_regressions(peel, 'Peel')
 df <- regression_eqs(peel, res$my.seg, res$breaks)
 ggsave('Breakpoint_Analysis/Default/Peel/Peel_Default_Breaks.png', 
        res$plot,
@@ -215,7 +268,10 @@ ggsave('Breakpoint_Analysis/Default/Peel/Peel_Default_Breaks.png',
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Default/Peel/Peel_Default_Breaks.csv')
-peel_def_plot <- res$plot
+peel_def_plot <- res$plot +
+  geom_vline(xintercept = res$breaks,
+             linetype = "dashed")
+  
 peel_def_plot
 df
 ```
@@ -237,21 +293,42 @@ breaks <- t_tl %>%
   filter(Date %in% dates) %>% 
   mutate(Milestone = paste(Date, Milestone, sep='\n'))
 
-res <- segmented_regressions(toronto, 'Toronto fixed breaks', breaks)
+res <- segmented_regressions(toronto, 'Toronto', breaks)
 df <- regression_eqs(toronto, res$my.seg, res$breaks)
+
+tor_fix_plot <- res$plot +
+  annotate('rect', xmin=df$break_start[2], xmax=df$break_end[2],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.1) +
+  annotate('rect', xmin=df$break_start[3], xmax=df$break_end[3],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.3) +
+  annotate('rect', xmin=df$break_start[4], xmax=df$break_end[5],
+           ymin=-Inf, ymax=+Inf,
+           fill='green', alpha=0.2) +
+  annotate('rect', xmin=df$break_start[6], xmax=df$break_end[8],
+         ymin=-Inf, ymax=+Inf,
+         fill='red', alpha=0.1) +
+  geom_vline(breaks,
+             mapping = aes(xintercept=Date),
+             linetype = "dashed") +
+  geom_label_repel(breaks,
+                   mapping=aes(label=Milestone,x=Date,y=3.5),
+                   size=2)
+
 ggsave('Breakpoint_Analysis/Fixed/Toronto/Toronto_Fixed_Breaks.png', 
        res$plot,
        height = 8.5,
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Fixed/Toronto/Toronto_Fixed_Breaks.csv')
-tor_fix_plot <- res$plot
+
 tor_fix_plot
 df
 ```
 
 ```{r}
-res <- segmented_regressions(toronto, 'Toronto default breaks')
+res <- segmented_regressions(toronto, 'Toronto')
 df <- regression_eqs(toronto, res$my.seg, res$breaks)
 ggsave('Breakpoint_Analysis/Default/Toronto/Toronto_Default_Breaks.png', 
        res$plot,
@@ -259,7 +336,9 @@ ggsave('Breakpoint_Analysis/Default/Toronto/Toronto_Default_Breaks.png',
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Default/Toronto/Toronto_Default_Breaks.csv')
-tor_def_plot <- res$plot
+tor_def_plot <- res$plot +
+  geom_vline(xintercept = res$breaks,
+             linetype = "dashed")
 tor_def_plot
 df
 ```
@@ -286,21 +365,43 @@ breaks <- w_tl %>%
   filter(Date %in% dates) %>% 
   mutate(Milestone = paste(Date, Milestone, sep='\n'))
 
-res <- segmented_regressions(waterloo, 'Waterloo fixed dates', breaks)
+res <- segmented_regressions(waterloo, 'Waterloo', breaks)
 df <- regression_eqs(waterloo, res$my.seg, res$breaks)
+
+wat_fix_plot <- res$plot +
+  annotate('rect', xmin=df$break_start[2], xmax=df$break_end[2],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.1) +
+  annotate('rect', xmin=df$break_start[3], xmax=df$break_end[3],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.3) +
+  annotate('rect', xmin=df$break_start[4], xmax=df$break_end[6],
+           ymin=-Inf, ymax=+Inf,
+           fill='green', alpha=0.2) +
+  annotate('rect', xmin=df$break_start[7], xmax=df$break_end[10],
+         ymin=-Inf, ymax=+Inf,
+         fill='red', alpha=0.1) +
+  geom_vline(breaks,
+             mapping = aes(xintercept=Date),
+             linetype = "dashed") +
+  geom_label_repel(breaks,
+                   mapping=aes(label=Milestone,x=Date,y=3.5),
+                   size=2)
+  
+
 ggsave('Breakpoint_Analysis/Fixed/Waterloo/Waterloo_Fixed_Breaks.png', 
        res$plot,
        height = 8.5,
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Fixed/Waterloo/Waterloo_Fixed_Breaks.csv')
-wat_fix_plot <- res$plot
+
 wat_fix_plot
 df
 ```
 
 ```{r}
-res <- segmented_regressions(waterloo, 'Waterloo default dates')
+res <- segmented_regressions(waterloo, 'Waterloo')
 df <- regression_eqs(waterloo, res$my.seg, res$breaks)
 ggsave('Breakpoint_Analysis/Default/Waterloo/Waterloo_Default_Breaks.png', 
        res$plot,
@@ -308,7 +409,9 @@ ggsave('Breakpoint_Analysis/Default/Waterloo/Waterloo_Default_Breaks.png',
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Default/Waterloo/Waterloo_Default_Breaks.csv')
-wat_def_plot <- res$plot
+wat_def_plot <- res$plot +
+  geom_vline(xintercept = res$breaks,
+             linetype = "dashed")
 wat_def_plot
 df
 ```
@@ -333,33 +436,54 @@ breaks <- y_tl %>%
   filter(Date %in% dates) %>% 
   mutate(Milestone = paste(Date, Milestone, sep='\n'))
 
-res <- segmented_regressions(york, 'York fixed dates', breaks)
+res <- segmented_regressions(york, 'York', breaks)
 df <- regression_eqs(york, res$my.seg, res$breaks)
+
+york_fix_plot <- res$plot +
+  annotate('rect', xmin=df$break_start[2], xmax=df$break_end[2],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.3) +
+  annotate('rect', xmin=df$break_start[3], xmax=df$break_end[6],
+           ymin=-Inf, ymax=+Inf,
+           fill='green', alpha=0.2) +
+  annotate('rect', xmin=df$break_start[7], xmax=df$break_end[10],
+         ymin=-Inf, ymax=+Inf,
+         fill='red', alpha=0.1) +
+  geom_vline(breaks,
+             mapping = aes(xintercept=Date),
+             linetype = "dashed") +
+  geom_label_repel(breaks,
+                   mapping=aes(label=Milestone,x=Date,y=3.5),
+                   size=2)
+
 ggsave('Breakpoint_Analysis/Fixed/York/York_Fixed_Breaks.png', 
        res$plot,
        height = 8.5,
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Fixed/York/York_Fixed_Breaks.csv')
-york_fix_plot <- res$plot
+
 york_fix_plot
 df
 ```
 
 ```{r}
-res <- segmented_regressions(york, 'York default dates')
+res <- segmented_regressions(york, 'York')
 df <- regression_eqs(york, res$my.seg, res$breaks)
-ggsave('Breakpoint_Analysis/Default/York/York_Default_Breaks.png', 
+ggsave('Breakpoint_Analysis/Default/York/York_Default_Breaks.png',
        res$plot,
        height = 8.5,
        width = 11,
        units = 'in')
 write_csv(df, 'Breakpoint_Analysis/Default/York/York_Default_Breaks.csv')
-york_def_plot <- res$plot
+york_def_plot <- res$plot +
+  geom_vline(xintercept = res$breaks,
+             linetype = "dashed")
 york_def_plot
 df
 ```
 
+Create combined figure
 ```{r}
 fixed <- ggarrange(ont_fix_plot, peel_fix_plot, tor_fix_plot, wat_fix_plot, york_fix_plot,
           ncol=1)
