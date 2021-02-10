@@ -1,5 +1,5 @@
 ---
-title: "correlation"
+title: "Correlation Analysis"
 output: html_document
 ---
 
@@ -46,53 +46,69 @@ Toronto: 3/17/20 - 6/24/20
 Waterloo: 3/17/20 - 6/12/20  
 York: 3/17/20 - 5/19/20  
 
-## 0 day lag after lockdown
-
-Functions
 ```{r}
 # # take log of R to prevent negative predictions
 # mutate(`ln(R)` = log(`Mean(R)`)) %>% 
 ```
 
+## Function to convert data into useful form
+Input: mobility data, rt data, lockdown start date, lockdown end date, columns to keep  
+Output: Df of specific region to run regressions on
 ```{r}
 get_data <- function(mob_data, rt_data, lock_start, lock_end, cols) {
   df <- mob_data %>% 
-    inner_join(rt_data, by=c("date" = "date_start")) %>% 
+    left_join(rt_data, by=c("date" = "date_start")) %>% 
     select(all_of(cols)) %>% 
     mutate(date = as.Date(date)) %>% 
-    mutate(lag_7 = lead(`Mean(R)`, 7)) %>% 
-    mutate(lag_14 = lead(`Mean(R)`, 14)) %>% 
+    rename(retail=retail_and_recreation_percent_change_from_baseline,grocery=grocery_and_pharmacy_percent_change_from_baseline, parks=parks_percent_change_from_baseline, transit=transit_stations_percent_change_from_baseline, workplaces=workplaces_percent_change_from_baseline, residential=residential_percent_change_from_baseline, global=`Global Mobility Score`) %>% 
+    mutate(retail_lag7 = lag(retail, 7)) %>% 
+    mutate(grocery_lag7 = lag(grocery, 7) ) %>% 
+    mutate(parks_lag7 = lag(parks, 7)) %>%
+    mutate(transit_lag7 = lag(transit, 7)) %>%
+    mutate(workplaces_lag7 = lag(workplaces, 7)) %>%
+    mutate(residential_lag7 = lag(residential, 7)) %>%
+    mutate(global_lag7 = lag(global, 7)) %>%
+    mutate(retail_lag14 = lag(retail, 14)) %>% 
+    mutate(grocery_lag14 = lag(grocery, 14) ) %>% 
+    mutate(parks_lag14 = lag(parks, 14)) %>%
+    mutate(transit_lag14 = lag(transit, 14)) %>%
+    mutate(workplaces_lag14 = lag(workplaces, 14)) %>%
+    mutate(residential_lag14 = lag(residential, 14)) %>%
+    mutate(global_lag14 = lag(global, 14)) %>%
     filter(date>=lock_start & date<=lock_end)
   return(df)
 }
 ```
 
+## Function to get regression data
+Input: Df of specific region, desired mobility lag time (0, 7, or 14 days)  
+Output: Df of specific region with list of regressions for each mobility
 ```{r}
 get_regressions <- function(data, lag) {
   if(lag==0) {
-    retail <- lm(`Mean(R)` ~ retail_and_recreation_percent_change_from_baseline, data = data)
-    grocery <- lm(`Mean(R)` ~ grocery_and_pharmacy_percent_change_from_baseline, data = data)
-    parks <- lm(`Mean(R)` ~ parks_percent_change_from_baseline, data = data)
-    transit <- lm(`Mean(R)` ~ transit_stations_percent_change_from_baseline, data = data)
-    workplaces <- lm(`Mean(R)` ~ workplaces_percent_change_from_baseline, data = data)
-    residential <- lm(`Mean(R)` ~ residential_percent_change_from_baseline, data = data)
-    global <- lm(`Mean(R)` ~ `Global Mobility Score`, data = data)
+    retail <- lm(`Mean(R)` ~ retail, data = data)
+    grocery <- lm(`Mean(R)` ~ grocery, data = data)
+    parks <- lm(`Mean(R)` ~ parks, data = data)
+    transit <- lm(`Mean(R)` ~ transit, data = data)
+    workplaces <- lm(`Mean(R)` ~ workplaces, data = data)
+    residential <- lm(`Mean(R)` ~ residential, data = data)
+    global <- lm(`Mean(R)` ~ global, data = data)
   } else if(lag==7) {
-    retail <- lm(lag_7 ~ retail_and_recreation_percent_change_from_baseline, data = data)
-    grocery <- lm(lag_7 ~ grocery_and_pharmacy_percent_change_from_baseline, data = data)
-    parks <- lm(lag_7 ~ parks_percent_change_from_baseline, data = data)
-    transit <- lm(lag_7 ~ transit_stations_percent_change_from_baseline, data = data)
-    workplaces <- lm(lag_7 ~ workplaces_percent_change_from_baseline, data = data)
-    residential <- lm(lag_7 ~ residential_percent_change_from_baseline, data = data)
-    global <- lm(lag_7 ~ `Global Mobility Score`, data = data)
+    retail <- lm(`Mean(R)` ~ retail_lag7, data = data)
+    grocery <- lm(`Mean(R)` ~ grocery_lag7, data = data)
+    parks <- lm(`Mean(R)` ~ parks_lag7, data = data)
+    transit <- lm(`Mean(R)` ~ transit_lag7, data = data)
+    workplaces <- lm(`Mean(R)` ~ workplaces_lag7, data = data)
+    residential <- lm(`Mean(R)` ~ residential_lag7, data = data)
+    global <- lm(`Mean(R)` ~ global_lag7, data = data)
   } else if(lag==14) {
-    retail <- lm(lag_14 ~ retail_and_recreation_percent_change_from_baseline, data = data)
-    grocery <- lm(lag_14 ~ grocery_and_pharmacy_percent_change_from_baseline, data = data)
-    parks <- lm(lag_14 ~ parks_percent_change_from_baseline, data = data)
-    transit <- lm(lag_14 ~ transit_stations_percent_change_from_baseline, data = data)
-    workplaces <- lm(lag_14 ~ workplaces_percent_change_from_baseline, data = data)
-    residential <- lm(lag_14 ~ residential_percent_change_from_baseline, data = data)
-    global <- lm(lag_14 ~ `Global Mobility Score`, data = data)
+    retail <- lm(`Mean(R)` ~ retail_lag14, data = data)
+    grocery <- lm(`Mean(R)` ~ grocery_lag14, data = data)
+    parks <- lm(`Mean(R)` ~ parks_lag14, data = data)
+    transit <- lm(`Mean(R)` ~ transit_lag14, data = data)
+    workplaces <- lm(`Mean(R)` ~ workplaces_lag14, data = data)
+    residential <- lm(`Mean(R)` ~ residential_lag14, data = data)
+    global <- lm(`Mean(R)` ~ global_lag14, data = data)
   } else {
     stop('Must enter 0, 7, or 14')
   }
@@ -101,12 +117,44 @@ get_regressions <- function(data, lag) {
 }
 ```
 
-columns to keep
+## Function to get coefficient data
+Input: List of region df's each containing regression info  
+Output: Coefficient data df of specified lag time
+```{r}
+coef_data <- function(data) {
+  place <- numeric(length=35)
+  mobility <- numeric(length=35)
+  coefficient <- numeric(length=35)
+  r2 <- numeric(length=35)
+  p_val <- numeric(length=35)
+  i=1
+  j=1
+  k=1
+  for(loc in data){
+    for(reg in loc) {
+      place[i] <- names(data)[j]
+      mobility[i] <- names(loc)[k]
+      coefficient[i] <- tidy(reg)[[2,2]]
+      r2[i] <- glance(reg)[[1,2]]
+      p_val[i] <- glance(reg)[[1,5]]
+      i=i+1
+      k=k+1
+    }
+    j=j+1
+    k=1
+  }
+  df <- data.frame(place, mobility, coefficient, r2, p_val)
+  return(df)
+}
+```
+
+## Pipeline
+Columns to keep
 ```{r}
 COLS <- c('sub_region_1', 'date', 'retail_and_recreation_percent_change_from_baseline','grocery_and_pharmacy_percent_change_from_baseline', 'parks_percent_change_from_baseline', 'transit_stations_percent_change_from_baseline', 'workplaces_percent_change_from_baseline', 'residential_percent_change_from_baseline', 'Global Mobility Score', 'Mean(R)')
 ```
 
-get data
+Get data
 ```{r}
 o <- get_data(o_mob, o_rt, '2020-03-17', '2020-05-20', COLS)
 p <- get_data(p_mob, p_rt, '2020-03-17', '2020-06-22', COLS)
@@ -148,46 +196,34 @@ fourteen <- list(
 )
 ```
 
-```{r}
-coef_data <- function(data) {
-  place <- numeric(length=35)
-  mobility <- numeric(length=35)
-  coefficient <- numeric(length=35)
-  r2 <- numeric(length=35)
-  p_val <- numeric(length=35)
-  i=1
-  j=1
-  k=1
-  for(loc in data){
-    for(reg in loc) {
-      place[i] <- names(data)[j]
-      mobility[i] <- names(loc)[k]
-      coefficient[i] <- tidy(reg)[[2,2]]
-      r2[i] <- glance(reg)[[1,2]]
-      p_val[i] <- glance(reg)[[1,5]]
-      i=i+1
-      k=k+1
-    }
-    j=j+1
-    k=1
-  }
-  df <- data.frame(place, mobility, coefficient, r2, p_val)
-  return(df)
-}
-```
-
+Get coefficient data for each time lag  
+Add period column, later factor it appropriately  
+Combine into one df (total)  
+Check if each p-value is statistically significant (<0.01)
 ```{r}
 zero_coef <- coef_data(zero)
 zero_coef$period <- rep('Lockdown', times=35)
+
 seven_coef <- coef_data(seven)
 seven_coef$period <- rep('7 Days after lockdown', times=35)
+
 fourteen_coef <- coef_data(fourteen)
 fourteen_coef$period <- rep('14 Days after lockdown', times=35)
+
 total <- rbind(zero_coef, seven_coef, fourteen_coef)
 total$period <- factor(total$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
+total <- total %>% 
+  mutate(
+    significant = case_when(
+      p_val < 0.01 ~ 'Yes',
+      p_val >= 0.01 ~ 'No'
+    )
+  )
+
 write_csv(total, 'Correlation_Analysis/total.csv')
 ```
 
+## Barplot
 ```{r}
 p <- ggplot(total, aes(x=place, y=coefficient, fill=mobility)) +
   geom_col(position = 'dodge') +
@@ -202,11 +238,11 @@ ggsave('Correlation_analysis/barplot.png',
 p
 ```
 
-
+## Lineplot
 ```{r}
 d <- filter(total, mobility=='global')
 p <- ggplot(d, aes(x=period, y=coefficient, group=place, color=place)) +
-  geom_point() +
+  geom_point(d, mapping=aes(shape=significant), size=3) +
   geom_line(linetype='dashed') + 
   theme_bw()
 ggsave('Correlation_analysis/lineplot.png',
