@@ -249,7 +249,7 @@ peel_fix_plot <- res$plot +
                    size=2)
 
 ggsave('Breakpoint_Analysis/Fixed/Peel/Peel_Fixed_Breaks.png', 
-       res$plot,
+       peel_fix_plot,
        height = 8.5,
        width = 11,
        units = 'in')
@@ -317,7 +317,7 @@ tor_fix_plot <- res$plot +
                    size=2)
 
 ggsave('Breakpoint_Analysis/Fixed/Toronto/Toronto_Fixed_Breaks.png', 
-       res$plot,
+       tor_fix_plot,
        height = 8.5,
        width = 11,
        units = 'in')
@@ -390,7 +390,7 @@ wat_fix_plot <- res$plot +
   
 
 ggsave('Breakpoint_Analysis/Fixed/Waterloo/Waterloo_Fixed_Breaks.png', 
-       res$plot,
+       wat_fix_plot,
        height = 8.5,
        width = 11,
        units = 'in')
@@ -457,7 +457,7 @@ york_fix_plot <- res$plot +
                    size=2)
 
 ggsave('Breakpoint_Analysis/Fixed/York/York_Fixed_Breaks.png', 
-       res$plot,
+       york_fix_plot,
        height = 8.5,
        width = 11,
        units = 'in')

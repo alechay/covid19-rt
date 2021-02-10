@@ -1,0 +1,220 @@
+---
+title: "correlation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages
+```{r}
+library(tidyverse)
+library(readxl)
+library(ggpubr)
+library(broom)
+```
+
+## Load data
+```{r}
+# Rt data
+o_rt <- read_csv('Estimated_R/ontario_R.csv')
+p_rt <- read_csv('Estimated_R/peel_R.csv')
+t_rt <- read_csv('Estimated_R/tor_R.csv')
+w_rt <- read_csv('Estimated_R/wat_R.csv')
+y_rt <- read_csv('Estimated_R/york_R.csv')
+
+# Mobility data
+o_mob <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Ontario Data')
+p_mob <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Peel Data')
+t_mob <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Toronto Data')
+w_mob <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'Waterloo Data')
+y_mob <- read_excel('Mobility&Rt January 30.xlsx', 
+                   sheet = 'York Data')
+```
+
+## Lockdown timeline
+On March 17, Premier Ford declared a provincial state of emergency, prohibiting public gatherings larger than 50 people, and ordering the closure of all schools, child care services, libraries, indoor recreation facilities, dine-in bars and restaurants, and all cinemas, theatres, and concert venues.  
+Therefore, I will say that the lockdown began in all places on 3/17/20, as they are all cities located in Ontario.  
+Ontario: 3/17/20 - 5/14/20  
+Peel: 3/17/20 - 6/22/20  
+Toronto: 3/17/20 - 6/24/20  
+Waterloo: 3/17/20 - 6/12/20  
+York: 3/17/20 - 5/19/20  
+
+## 0 day lag after lockdown
+
+Functions
+```{r}
+# # take log of R to prevent negative predictions
+# mutate(`ln(R)` = log(`Mean(R)`)) %>% 
+```
+
+```{r}
+get_data <- function(mob_data, rt_data, lock_start, lock_end, cols) {
+  df <- mob_data %>% 
+    inner_join(rt_data, by=c("date" = "date_start")) %>% 
+    select(all_of(cols)) %>% 
+    mutate(date = as.Date(date)) %>% 
+    mutate(lag_7 = lead(`Mean(R)`, 7)) %>% 
+    mutate(lag_14 = lead(`Mean(R)`, 14)) %>% 
+    filter(date>=lock_start & date<=lock_end)
+  return(df)
+}
+```
+
+```{r}
+get_regressions <- function(data, lag) {
+  if(lag==0) {
+    retail <- lm(`Mean(R)` ~ retail_and_recreation_percent_change_from_baseline, data = data)
+    grocery <- lm(`Mean(R)` ~ grocery_and_pharmacy_percent_change_from_baseline, data = data)
+    parks <- lm(`Mean(R)` ~ parks_percent_change_from_baseline, data = data)
+    transit <- lm(`Mean(R)` ~ transit_stations_percent_change_from_baseline, data = data)
+    workplaces <- lm(`Mean(R)` ~ workplaces_percent_change_from_baseline, data = data)
+    residential <- lm(`Mean(R)` ~ residential_percent_change_from_baseline, data = data)
+    global <- lm(`Mean(R)` ~ `Global Mobility Score`, data = data)
+  } else if(lag==7) {
+    retail <- lm(lag_7 ~ retail_and_recreation_percent_change_from_baseline, data = data)
+    grocery <- lm(lag_7 ~ grocery_and_pharmacy_percent_change_from_baseline, data = data)
+    parks <- lm(lag_7 ~ parks_percent_change_from_baseline, data = data)
+    transit <- lm(lag_7 ~ transit_stations_percent_change_from_baseline, data = data)
+    workplaces <- lm(lag_7 ~ workplaces_percent_change_from_baseline, data = data)
+    residential <- lm(lag_7 ~ residential_percent_change_from_baseline, data = data)
+    global <- lm(lag_7 ~ `Global Mobility Score`, data = data)
+  } else if(lag==14) {
+    retail <- lm(lag_14 ~ retail_and_recreation_percent_change_from_baseline, data = data)
+    grocery <- lm(lag_14 ~ grocery_and_pharmacy_percent_change_from_baseline, data = data)
+    parks <- lm(lag_14 ~ parks_percent_change_from_baseline, data = data)
+    transit <- lm(lag_14 ~ transit_stations_percent_change_from_baseline, data = data)
+    workplaces <- lm(lag_14 ~ workplaces_percent_change_from_baseline, data = data)
+    residential <- lm(lag_14 ~ residential_percent_change_from_baseline, data = data)
+    global <- lm(lag_14 ~ `Global Mobility Score`, data = data)
+  } else {
+    stop('Must enter 0, 7, or 14')
+  }
+
+  return(list(retail=retail, grocery=grocery, parks=parks, transit=transit, workplaces=workplaces, residential=residential, global=global))
+}
+```
+
+columns to keep
+```{r}
+COLS <- c('sub_region_1', 'date', 'retail_and_recreation_percent_change_from_baseline','grocery_and_pharmacy_percent_change_from_baseline', 'parks_percent_change_from_baseline', 'transit_stations_percent_change_from_baseline', 'workplaces_percent_change_from_baseline', 'residential_percent_change_from_baseline', 'Global Mobility Score', 'Mean(R)')
+```
+
+get data
+```{r}
+o <- get_data(o_mob, o_rt, '2020-03-17', '2020-05-20', COLS)
+p <- get_data(p_mob, p_rt, '2020-03-17', '2020-06-22', COLS)
+t <- get_data(t_mob, t_rt, '2020-03-17', '2020-06-24', COLS)
+w <- get_data(w_mob, w_rt, '2020-03-17', '2020-06-12', COLS)
+y <- get_data(y_mob, y_rt, '2020-03-17', '2020-05-19', COLS)
+```
+
+0 day lag
+```{r}
+zero <- list(
+  ontario=get_regressions(o, 0),
+  peel=get_regressions(p, 0),
+  toronto=get_regressions(t, 0),
+  waterloo=get_regressions(w, 0),
+  york=get_regressions(y, 0)
+)
+```
+
+7 day lag
+```{r}
+seven <- list(
+  ontario=get_regressions(o, 7),
+  peel=get_regressions(p, 7),
+  toronto=get_regressions(t, 7),
+  waterloo=get_regressions(w, 7),
+  york=get_regressions(y, 7)
+)
+```
+
+14 day lag
+```{r}
+fourteen <- list(
+  ontario = get_regressions(o, 14),
+  peel = get_regressions(p, 14),
+  toronto = get_regressions(t, 14),
+  waterloo = get_regressions(w, 14),
+  york = get_regressions(y, 14)
+)
+```
+
+```{r}
+coef_data <- function(data) {
+  place <- numeric(length=35)
+  mobility <- numeric(length=35)
+  coefficient <- numeric(length=35)
+  r2 <- numeric(length=35)
+  p_val <- numeric(length=35)
+  i=1
+  j=1
+  k=1
+  for(loc in data){
+    for(reg in loc) {
+      place[i] <- names(data)[j]
+      mobility[i] <- names(loc)[k]
+      coefficient[i] <- tidy(reg)[[2,2]]
+      r2[i] <- glance(reg)[[1,2]]
+      p_val[i] <- glance(reg)[[1,5]]
+      i=i+1
+      k=k+1
+    }
+    j=j+1
+    k=1
+  }
+  df <- data.frame(place, mobility, coefficient, r2, p_val)
+  return(df)
+}
+```
+
+```{r}
+zero_coef <- coef_data(zero)
+zero_coef$period <- rep('Lockdown', times=35)
+seven_coef <- coef_data(seven)
+seven_coef$period <- rep('7 Days after lockdown', times=35)
+fourteen_coef <- coef_data(fourteen)
+fourteen_coef$period <- rep('14 Days after lockdown', times=35)
+total <- rbind(zero_coef, seven_coef, fourteen_coef)
+total$period <- factor(total$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
+write_csv(total, 'Correlation_Analysis/total.csv')
+```
+
+```{r}
+p <- ggplot(total, aes(x=place, y=coefficient, fill=mobility)) +
+  geom_col(position = 'dodge') +
+  geom_vline(xintercept = c(1.5, 2.5, 3.5, 4.5)) +
+  facet_grid(rows=vars(period)) +
+  theme_bw()
+ggsave('Correlation_analysis/barplot.png',
+       p,
+       height = 8.5,
+       width = 11,
+       units = 'in')
+p
+```
+
+
+```{r}
+d <- filter(total, mobility=='global')
+p <- ggplot(d, aes(x=period, y=coefficient, group=place, color=place)) +
+  geom_point() +
+  geom_line(linetype='dashed') + 
+  theme_bw()
+ggsave('Correlation_analysis/lineplot.png',
+       p,
+       height = 8.5,
+       width = 11,
+       units = 'in')
+p
+```
+
+
