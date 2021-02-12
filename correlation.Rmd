@@ -38,6 +38,7 @@ y_mob <- read_excel('Mobility&Rt January 30.xlsx',
 ```
 
 ## Lockdown timeline
+### First wave
 On March 17, Premier Ford declared a provincial state of emergency, prohibiting public gatherings larger than 50 people, and ordering the closure of all schools, child care services, libraries, indoor recreation facilities, dine-in bars and restaurants, and all cinemas, theatres, and concert venues.  
 Therefore, I will say that the lockdown began in all places on 3/17/20, as they are all cities located in Ontario.  
 Ontario: 3/17/20 - 5/14/20  
@@ -45,6 +46,14 @@ Peel: 3/17/20 - 6/22/20
 Toronto: 3/17/20 - 6/24/20  
 Waterloo: 3/17/20 - 6/12/20  
 York: 3/17/20 - 5/19/20  
+
+### Second wave
+(Gray)  
+Ontario: 12/26/20 - 1/22/21
+Peel: 11/23/20 - 1/22/21  
+Toronto: 11/23/20 - 1/22/21 
+Waterloo: 12/26/20 - 1/22/21  
+York: 12/14/20 - 1/22/21
 
 ```{r}
 # # take log of R to prevent negative predictions
@@ -76,6 +85,72 @@ get_data <- function(mob_data, rt_data, lock_start, lock_end, cols) {
     mutate(residential_lag14 = lag(residential, 14)) %>%
     mutate(global_lag14 = lag(global, 14)) %>%
     filter(date>=lock_start & date<=lock_end)
+  return(df)
+}
+```
+
+## Function to get correlation data
+Input: Df of specific region, desired mobility lag time (0, 7, or 14 days)  
+Output: Df of specific region with list of correlations for each mobility
+```{r}
+get_correlations <- function(data, lag) {
+  if(lag==0) {
+    retail <- cor.test(data$`Mean(R)`, data$retail, method = 'pearson')
+    grocery <- cor.test(data$`Mean(R)`, data$grocery, method = 'pearson')
+    parks <- cor.test(data$`Mean(R)`, data$parks, method = 'pearson')
+    transit <- cor.test(data$`Mean(R)`, data$transit, method = 'pearson')
+    workplaces <- cor.test(data$`Mean(R)`, data$workplaces, method = 'pearson')
+    residential <- cor.test(data$`Mean(R)`, data$residential, method = 'pearson')
+    global <- cor.test(data$`Mean(R)`, data$global, method = 'pearson')
+  } else if(lag==7) {
+    retail <- cor.test(data$`Mean(R)`, data$retail_lag7, method = 'pearson')
+    grocery <- cor.test(data$`Mean(R)`, data$grocery_lag7, method = 'pearson')
+    parks <- cor.test(data$`Mean(R)`, data$parks_lag7, method = 'pearson')
+    transit <- cor.test(data$`Mean(R)`, data$transit_lag7, method = 'pearson')
+    workplaces <- cor.test(data$`Mean(R)`, data$workplaces_lag7, method = 'pearson')
+    residential <- cor.test(data$`Mean(R)`, data$residential_lag7, method = 'pearson')
+    global <- cor.test(data$`Mean(R)`, data$global_lag7, method = 'pearson')
+  } else if(lag==14) {
+    retail <- cor.test(data$`Mean(R)`, data$retail_lag14, method = 'pearson')
+    grocery <- cor.test(data$`Mean(R)`, data$grocery_lag14, method = 'pearson')
+    parks <- cor.test(data$`Mean(R)`, data$parks_lag14, method = 'pearson')
+    transit <- cor.test(data$`Mean(R)`, data$transit_lag14, method = 'pearson')
+    workplaces <- cor.test(data$`Mean(R)`, data$workplaces_lag14, method = 'pearson')
+    residential <- cor.test(data$`Mean(R)`, data$residential_lag14, method = 'pearson')
+    global <- cor.test(data$`Mean(R)`, data$global_lag14, method = 'pearson')
+  } else {
+    stop('Must enter 0, 7, or 14')
+  }
+
+  return(list(retail=retail, grocery=grocery, parks=parks, transit=transit, workplaces=workplaces, residential=residential, global=global))
+}
+```
+
+## Function to get correlation coefficient
+Input: List of region df's each containing coefficient info  
+Output: Coefficient data df of specified lag time
+```{r}
+corr_coef <- function(data) {
+  place <- numeric(length=35)
+  mobility <- numeric(length=35)
+  coefficient <- numeric(length=35)
+  p_val <- numeric(length=35)
+  i=1
+  j=1
+  k=1
+  for(loc in data){
+    for(corr in loc) {
+      place[i] <- names(data)[j]
+      mobility[i] <- names(loc)[k]
+      coefficient[i] <- corr$estimate[[1]]
+      p_val[i] <- corr$p.value
+      i=i+1
+      k=k+1
+    }
+    j=j+1
+    k=1
+  }
+  df <- data.frame(place, mobility, coefficient, p_val)
   return(df)
 }
 ```
@@ -112,16 +187,15 @@ get_regressions <- function(data, lag) {
   } else {
     stop('Must enter 0, 7, or 14')
   }
-
   return(list(retail=retail, grocery=grocery, parks=parks, transit=transit, workplaces=workplaces, residential=residential, global=global))
 }
 ```
 
-## Function to get coefficient data
+## Function to get regression coefficient
 Input: List of region df's each containing regression info  
 Output: Coefficient data df of specified lag time
 ```{r}
-coef_data <- function(data) {
+reg_coef <- function(data) {
   place <- numeric(length=35)
   mobility <- numeric(length=35)
   coefficient <- numeric(length=35)
@@ -161,58 +235,153 @@ p <- get_data(p_mob, p_rt, '2020-03-17', '2020-06-22', COLS)
 t <- get_data(t_mob, t_rt, '2020-03-17', '2020-06-24', COLS)
 w <- get_data(w_mob, w_rt, '2020-03-17', '2020-06-12', COLS)
 y <- get_data(y_mob, y_rt, '2020-03-17', '2020-05-19', COLS)
+
+o2 <- get_data(o_mob, o_rt, '2020-12-26', '2021-01-22', COLS)
+p2 <- get_data(p_mob, p_rt, '2020-11-23', '2021-01-22', COLS)
+t2 <- get_data(t_mob, t_rt, '2020-11-23', '2021-01-22', COLS)
+w2 <- get_data(w_mob, w_rt, '2020-12-26', '2020-01-22', COLS)
+y2 <- get_data(y_mob, y_rt, '2020-12-14', '2020-01-22', COLS)
 ```
 
 0 day lag
 ```{r}
-zero <- list(
+zero_corr <- list(
+  ontario=get_correlations(o, 0),
+  peel=get_correlations(p, 0),
+  toronto=get_correlations(t, 0),
+  waterloo=get_correlations(w, 0),
+  york=get_correlations(y, 0)
+)
+zero_reg <- list(
   ontario=get_regressions(o, 0),
   peel=get_regressions(p, 0),
   toronto=get_regressions(t, 0),
   waterloo=get_regressions(w, 0),
   york=get_regressions(y, 0)
 )
+# zero_corr2 <- list(
+#   ontario=get_correlations(o2, 0),
+#   peel=get_correlations(p2, 0),
+#   toronto=get_correlations(t2, 0),
+#   waterloo=get_correlations(w2, 0),
+#   york=get_correlations(y2, 0)
+# )
+# zero_reg2 <- list(
+#   ontario=get_regressions(o2, 0),
+#   peel=get_regressions(p2, 0),
+#   toronto=get_regressions(t2, 0),
+#   waterloo=get_regressions(w2, 0),
+#   york=get_regressions(y2, 0)
+# )
 ```
 
 7 day lag
 ```{r}
-seven <- list(
+seven_corr <- list(
+  ontario=get_correlations(o, 7),
+  peel=get_correlations(p, 7),
+  toronto=get_correlations(t, 7),
+  waterloo=get_correlations(w, 7),
+  york=get_correlations(y, 7)
+)
+seven_reg <- list(
   ontario=get_regressions(o, 7),
   peel=get_regressions(p, 7),
   toronto=get_regressions(t, 7),
   waterloo=get_regressions(w, 7),
   york=get_regressions(y, 7)
 )
+# seven_corr2 <- list(
+#   ontario=get_correlations(o2, 7),
+#   peel=get_correlations(p2, 7),
+#   toronto=get_correlations(t2, 7),
+#   waterloo=get_correlations(w2, 7),
+#   york=get_correlations(y2, 7)
+# )
+# seven_reg2 <- list(
+#   ontario=get_regressions(o2, 7),
+#   peel=get_regressions(p2, 7),
+#   toronto=get_regressions(t2, 7),
+#   waterloo=get_regressions(w2, 7),
+#   york=get_regressions(y2, 7)
+# )
 ```
 
 14 day lag
 ```{r}
-fourteen <- list(
+fourteen_corr <- list(
+  ontario = get_correlations(o, 14),
+  peel = get_correlations(p, 14),
+  toronto = get_correlations(t, 14),
+  waterloo = get_correlations(w, 14),
+  york = get_correlations(y, 14)
+)
+fourteen_reg <- list(
   ontario = get_regressions(o, 14),
   peel = get_regressions(p, 14),
   toronto = get_regressions(t, 14),
   waterloo = get_regressions(w, 14),
   york = get_regressions(y, 14)
 )
+# fourteen_corr2 <- list(
+#   ontario = get_correlations(o2, 14),
+#   peel = get_correlations(p2, 14),
+#   toronto = get_correlations(t2, 14),
+#   waterloo = get_correlations(w2, 14),
+#   york = get_correlations(y2, 14)
+# )
+# fourteen_reg2 <- list(
+#   ontario = get_regressions(o2, 14),
+#   peel = get_regressions(p2, 14),
+#   toronto = get_regressions(t2, 14),
+#   waterloo = get_regressions(w2, 14),
+#   york = get_regressions(y2, 14)
+# )
 ```
 
-Get coefficient data for each time lag  
-Add period column, later factor it appropriately  
-Combine into one df (total)  
+Get coefficient data for each time lag
+Add period column, later factor it appropriately
+Combine into one df (total)
 Check if each p-value is statistically significant (<0.01)
 ```{r}
-zero_coef <- coef_data(zero)
-zero_coef$period <- rep('Lockdown', times=35)
+zero_corr_coef <- corr_coef(zero_corr)
+zero_corr_coef$period <- rep('Lockdown', times=35)
 
-seven_coef <- coef_data(seven)
-seven_coef$period <- rep('7 Days after lockdown', times=35)
+seven_corr_coef <- corr_coef(seven_corr)
+seven_corr_coef$period <- rep('7 Days after lockdown', times=35)
 
-fourteen_coef <- coef_data(fourteen)
-fourteen_coef$period <- rep('14 Days after lockdown', times=35)
+fourteen_corr_coef <- corr_coef(fourteen_corr)
+fourteen_corr_coef$period <- rep('14 Days after lockdown', times=35)
 
-total <- rbind(zero_coef, seven_coef, fourteen_coef)
-total$period <- factor(total$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
-total <- total %>% 
+total_corr <- rbind(zero_corr_coef, seven_corr_coef, fourteen_corr_coef)
+total_corr$wave <- rep('Wave 1', times=105)
+
+# # Wave 2
+# zero_corr_coef2 <- corr_coef(zero_corr2)
+# zero_corr_coef2$period <- rep('Lockdown', times=35)
+# 
+# seven_corr_coef2 <- corr_coef(seven_corr2)
+# seven_corr_coef2$period <- rep('7 Days after lockdown', times=35)
+# 
+# fourteen_corr_coef2 <- corr_coef(fourteen_corr2)
+# fourteen_corr_coef2$period <- rep('14 Days after lockdown', times=35)
+# 
+# total_corr2 <- rbind(zero_corr_coef2, seven_corr_coef2, fourteen_corr_coef2)
+# total_corr2$wave <- rep('Wave 2', times=105)
+# 
+# total_correlation <- rbind(total_corr, total_corr2)
+# 
+# total_correlation$period <- factor(total_correlation$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
+# total_correlation <- total_correlation %>%
+#   mutate(
+#     significant = case_when(
+#       p_val < 0.01 ~ 'Yes',
+#       p_val >= 0.01 ~ 'No'
+#     )
+#   )
+
+total_corr$period <- factor(total_corr$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
+total_corr <- total_corr %>%
   mutate(
     significant = case_when(
       p_val < 0.01 ~ 'Yes',
@@ -220,37 +389,116 @@ total <- total %>%
     )
   )
 
-write_csv(total, 'Correlation_Analysis/total.csv')
+write_csv(total_corr, 'Correlation_Analysis/corr_coef.csv')
+```
+
+Get coefficient data for each time lag
+Add period column, later factor it appropriately
+Combine into one df (total)
+Check if each p-value is statistically significant (<0.01)
+```{r}
+zero_reg_coef <- reg_coef(zero_reg)
+zero_reg_coef$period <- rep('Lockdown', times=35)
+
+seven_reg_coef <- reg_coef(seven_reg)
+seven_reg_coef$period <- rep('7 Days after lockdown', times=35)
+
+fourteen_reg_coef <- reg_coef(fourteen_reg)
+fourteen_reg_coef$period <- rep('14 Days after lockdown', times=35)
+
+total_reg <- rbind(zero_reg_coef, seven_reg_coef, fourteen_reg_coef)
+total_reg$wave <- rep('Wave 1', times=105)
+
+# # Wave 2
+# zero_reg_coef2 <- reg_coef(zero_reg2)
+# zero_reg_coef2$period <- rep('Lockdown', times=35)
+# 
+# seven_reg_coef2 <- reg_coef(seven_reg2)
+# seven_reg_coef2$period <- rep('7 Days after lockdown', times=35)
+# 
+# fourteen_reg_coef2 <- reg_coef(fourteen_reg2)
+# fourteen_reg_coef2$period <- rep('14 Days after lockdown', times=35)
+# 
+# total_reg2 <- rbind(zero_reg_coef2, seven_reg_coef2, fourteen_reg_coef2)
+# total_reg$wave <- rep('Wave 2', times=105)
+# 
+# total_regression <- rbind(total_reg, total_reg2)
+# 
+# total_regression$period <- factor(total_regression$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
+# total_regression <- total_regression %>%
+#   mutate(
+#     significant = case_when(
+#       p_val < 0.01 ~ 'Yes',
+#       p_val >= 0.01 ~ 'No'
+#     )
+#   )
+
+total_reg$period <- factor(total_reg$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
+total_reg <- total_reg %>%
+  mutate(
+    significant = case_when(
+      p_val < 0.01 ~ 'Yes',
+      p_val >= 0.01 ~ 'No'
+    )
+  )
+
+write_csv(total_reg, 'Correlation_Analysis/reg_coef.csv')
 ```
 
 ## Barplot
 ```{r}
-p <- ggplot(total, aes(x=place, y=coefficient, fill=mobility)) +
+p <- ggplot(total_reg, aes(x=place, y=coefficient, fill=mobility)) +
   geom_col(position = 'dodge') +
   geom_vline(xintercept = c(1.5, 2.5, 3.5, 4.5)) +
   facet_grid(rows=vars(period)) +
-  theme_bw()
-ggsave('Correlation_analysis/barplot.png',
+  ylab('regression coefficient')
+  # theme_bw()
+ggsave('Correlation_analysis/reg_barplot.png',
        p,
        height = 8.5,
        width = 11,
        units = 'in')
 p
 ```
+Regression coefficients of each type of mobility with Rt as the dependent variable. A simple way to grasp regression coefficients is to picture them as linear slopes. There is a strong, positive association between almost each type of mobility score and Rt during the periods 7 days after lockdown and 14 days after lockdown. Most of the time, when mobility score is high, Rt is also high.The exception is residential mobility; there is a strong, negative association between residential mobility score and Rt during the periods 7 days after lockdown and 14 days after lockdown. When residential mobility score is high, Rt is low. This suggests that there is a lag time before changes in global mobility score are reflected in Rt values.
+
 
 ## Lineplot
 ```{r}
-d <- filter(total, mobility=='global')
+d <- filter(total_corr, mobility=='global')
 p <- ggplot(d, aes(x=period, y=coefficient, group=place, color=place)) +
   geom_point(d, mapping=aes(shape=significant), size=3) +
-  geom_line(linetype='dashed') + 
-  theme_bw()
-ggsave('Correlation_analysis/lineplot.png',
+  geom_line(linetype='dashed') +
+  ylab('correlation coefficient')
+  # theme_bw()
+ggsave('Correlation_analysis/corr_lineplot.png',
        p,
        height = 8.5,
        width = 11,
        units = 'in')
 p
 ```
+Correlation coefficients between Rt and global mobility score. There is usually a strong, positive correlation between global mobility score and Rt during the periods 7 days after lockdown and 14 days after lockdown. When mobility score is high, Rt is also high. This also suggests that there is a lag time before changes in global mobility score are reflected in Rt values.
 
+Correlation coefficient formulas are used to find how strong a relationship is between data. The formulas return a value between -1 and 1, where:
 
+1 indicates a strong positive relationship.
+-1 indicates a strong negative relationship.
+A result of zero indicates no relationship at all.
+
+```{r}
+ont <- ggplot(o, aes(x=global_lag14, y=`Mean(R)`)) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  labs(title = 'ontario 14 days after lockdown') +
+  annotate("text", x = 0, y = 1, label = "Pearson's coef=0.904\nMean(R)=0.019(global_lag14)+1.607")
+tor <- ggplot(t, aes(x=global, y=`Mean(R)`)) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  labs(title='toronto after lockdown') +
+  annotate("text", x = -8, y = 1.5, label = "Pearson's coef=-0.455\nMean(R)=-0.009(global) + 0.835")
+ggsave('Correlation_analysis/ontatio14.png',
+       ont)
+ggsave('Correlation_analysis/toronto0.png',
+       tor)
+```
