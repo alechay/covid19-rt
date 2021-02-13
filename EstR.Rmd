@@ -123,7 +123,7 @@ png('Estimated_R/Ontario_R.png',
     width=11,
     height=8.5,
     units='in',
-    res = 72)
+    res = 144)
 plot(ont_R, 'R')
 dev.off()
 
@@ -131,7 +131,7 @@ png('Estimated_R/Peel_R.png',
     width=11,
     height=8.5,
     units='in',
-    res = 72)
+    res = 144)
 plot(peel_R, 'R')
 dev.off()
 
@@ -139,7 +139,7 @@ png('Estimated_R/Toronto_R.png',
     width=11,
     height=8.5,
     units='in',
-    res = 72)
+    res = 144)
 plot(tor_R, 'R')
 dev.off()
 
@@ -147,16 +147,16 @@ png('Estimated_R/Waterloo_R.png',
     width=11,
     height=8.5,
     units='in',
-    res = 72)
+    res = 144)
 plot(wat_R, 'R')
 dev.off()
 
-png('Estimated_R/York_R.png')
-plot(york_R, 'R', 
+png('Estimated_R/York_R.png', 
     width=11,
     height=8.5,
     units='in',
-    res = 72)
+    res = 144)
+plot(york_R, 'R')
 dev.off()
 ```
 
