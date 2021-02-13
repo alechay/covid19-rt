@@ -25,16 +25,19 @@ w_rt <- read_csv('Estimated_R/wat_R.csv')
 y_rt <- read_csv('Estimated_R/york_R.csv')
 
 # Mobility data
-o_mob <- read_excel('Mobility&Rt January 30.xlsx', 
-                   sheet = 'Ontario Data')
-p_mob <- read_excel('Mobility&Rt January 30.xlsx', 
-                   sheet = 'Peel Data')
-t_mob <- read_excel('Mobility&Rt January 30.xlsx', 
-                   sheet = 'Toronto Data')
-w_mob <- read_excel('Mobility&Rt January 30.xlsx', 
-                   sheet = 'Waterloo Data')
-y_mob <- read_excel('Mobility&Rt January 30.xlsx', 
-                   sheet = 'York Data')
+mob <- read_csv('2020_CA_Region_Mobility_Report.csv')
+mob <- mob %>% 
+  mutate(`Global Mobility Score` = (retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline)/6)
+o_mob <- mob %>% 
+  filter(sub_region_1=='Ontario' & is.na(sub_region_2))
+p_mob <- mob %>% 
+  filter(sub_region_1=='Ontario' & sub_region_2=='Regional Municipality of Peel')
+t_mob <- mob %>% 
+  filter(sub_region_1=='Ontario' & sub_region_2=='Toronto Division')
+w_mob <- mob %>% 
+  filter(sub_region_1=='Ontario' & sub_region_2=='Waterloo Regional Municipality')
+y_mob <- mob %>% 
+  filter(sub_region_1=='Ontario' & sub_region_2=='Regional Municipality of York')
 ```
 
 ## Lockdown timeline
@@ -230,21 +233,24 @@ COLS <- c('sub_region_1', 'date', 'retail_and_recreation_percent_change_from_bas
 
 Get data
 ```{r}
+# Wave 1
 o <- get_data(o_mob, o_rt, '2020-03-17', '2020-05-20', COLS)
 p <- get_data(p_mob, p_rt, '2020-03-17', '2020-06-22', COLS)
 t <- get_data(t_mob, t_rt, '2020-03-17', '2020-06-24', COLS)
 w <- get_data(w_mob, w_rt, '2020-03-17', '2020-06-12', COLS)
 y <- get_data(y_mob, y_rt, '2020-03-17', '2020-05-19', COLS)
 
+# Wave 2
 o2 <- get_data(o_mob, o_rt, '2020-12-26', '2021-01-22', COLS)
 p2 <- get_data(p_mob, p_rt, '2020-11-23', '2021-01-22', COLS)
 t2 <- get_data(t_mob, t_rt, '2020-11-23', '2021-01-22', COLS)
-w2 <- get_data(w_mob, w_rt, '2020-12-26', '2020-01-22', COLS)
-y2 <- get_data(y_mob, y_rt, '2020-12-14', '2020-01-22', COLS)
+w2 <- get_data(w_mob, w_rt, '2020-12-26', '2021-01-22', COLS)
+y2 <- get_data(y_mob, y_rt, '2020-12-14', '2021-01-22', COLS)
 ```
 
 0 day lag
 ```{r}
+# Wave 1
 zero_corr <- list(
   ontario=get_correlations(o, 0),
   peel=get_correlations(p, 0),
@@ -259,24 +265,27 @@ zero_reg <- list(
   waterloo=get_regressions(w, 0),
   york=get_regressions(y, 0)
 )
-# zero_corr2 <- list(
-#   ontario=get_correlations(o2, 0),
-#   peel=get_correlations(p2, 0),
-#   toronto=get_correlations(t2, 0),
-#   waterloo=get_correlations(w2, 0),
-#   york=get_correlations(y2, 0)
-# )
-# zero_reg2 <- list(
-#   ontario=get_regressions(o2, 0),
-#   peel=get_regressions(p2, 0),
-#   toronto=get_regressions(t2, 0),
-#   waterloo=get_regressions(w2, 0),
-#   york=get_regressions(y2, 0)
-# )
+
+# Wave 2
+zero_corr2 <- list(
+  ontario=get_correlations(o2, 0),
+  peel=get_correlations(p2, 0),
+  toronto=get_correlations(t2, 0),
+  waterloo=get_correlations(w2, 0),
+  york=get_correlations(y2, 0)
+)
+zero_reg2 <- list(
+  ontario=get_regressions(o2, 0),
+  peel=get_regressions(p2, 0),
+  toronto=get_regressions(t2, 0),
+  waterloo=get_regressions(w2, 0),
+  york=get_regressions(y2, 0)
+)
 ```
 
 7 day lag
 ```{r}
+# Wave 1
 seven_corr <- list(
   ontario=get_correlations(o, 7),
   peel=get_correlations(p, 7),
@@ -291,20 +300,22 @@ seven_reg <- list(
   waterloo=get_regressions(w, 7),
   york=get_regressions(y, 7)
 )
-# seven_corr2 <- list(
-#   ontario=get_correlations(o2, 7),
-#   peel=get_correlations(p2, 7),
-#   toronto=get_correlations(t2, 7),
-#   waterloo=get_correlations(w2, 7),
-#   york=get_correlations(y2, 7)
-# )
-# seven_reg2 <- list(
-#   ontario=get_regressions(o2, 7),
-#   peel=get_regressions(p2, 7),
-#   toronto=get_regressions(t2, 7),
-#   waterloo=get_regressions(w2, 7),
-#   york=get_regressions(y2, 7)
-# )
+
+# Wave 2
+seven_corr2 <- list(
+  ontario=get_correlations(o2, 7),
+  peel=get_correlations(p2, 7),
+  toronto=get_correlations(t2, 7),
+  waterloo=get_correlations(w2, 7),
+  york=get_correlations(y2, 7)
+)
+seven_reg2 <- list(
+  ontario=get_regressions(o2, 7),
+  peel=get_regressions(p2, 7),
+  toronto=get_regressions(t2, 7),
+  waterloo=get_regressions(w2, 7),
+  york=get_regressions(y2, 7)
+)
 ```
 
 14 day lag
@@ -323,20 +334,20 @@ fourteen_reg <- list(
   waterloo = get_regressions(w, 14),
   york = get_regressions(y, 14)
 )
-# fourteen_corr2 <- list(
-#   ontario = get_correlations(o2, 14),
-#   peel = get_correlations(p2, 14),
-#   toronto = get_correlations(t2, 14),
-#   waterloo = get_correlations(w2, 14),
-#   york = get_correlations(y2, 14)
-# )
-# fourteen_reg2 <- list(
-#   ontario = get_regressions(o2, 14),
-#   peel = get_regressions(p2, 14),
-#   toronto = get_regressions(t2, 14),
-#   waterloo = get_regressions(w2, 14),
-#   york = get_regressions(y2, 14)
-# )
+fourteen_corr2 <- list(
+  ontario = get_correlations(o2, 14),
+  peel = get_correlations(p2, 14),
+  toronto = get_correlations(t2, 14),
+  waterloo = get_correlations(w2, 14),
+  york = get_correlations(y2, 14)
+)
+fourteen_reg2 <- list(
+  ontario = get_regressions(o2, 14),
+  peel = get_regressions(p2, 14),
+  toronto = get_regressions(t2, 14),
+  waterloo = get_regressions(w2, 14),
+  york = get_regressions(y2, 14)
+)
 ```
 
 Get coefficient data for each time lag
@@ -344,6 +355,7 @@ Add period column, later factor it appropriately
 Combine into one df (total)
 Check if each p-value is statistically significant (<0.01)
 ```{r}
+# Wave 1
 zero_corr_coef <- corr_coef(zero_corr)
 zero_corr_coef$period <- rep('Lockdown', times=35)
 
@@ -356,32 +368,24 @@ fourteen_corr_coef$period <- rep('14 Days after lockdown', times=35)
 total_corr <- rbind(zero_corr_coef, seven_corr_coef, fourteen_corr_coef)
 total_corr$wave <- rep('Wave 1', times=105)
 
-# # Wave 2
-# zero_corr_coef2 <- corr_coef(zero_corr2)
-# zero_corr_coef2$period <- rep('Lockdown', times=35)
-# 
-# seven_corr_coef2 <- corr_coef(seven_corr2)
-# seven_corr_coef2$period <- rep('7 Days after lockdown', times=35)
-# 
-# fourteen_corr_coef2 <- corr_coef(fourteen_corr2)
-# fourteen_corr_coef2$period <- rep('14 Days after lockdown', times=35)
-# 
-# total_corr2 <- rbind(zero_corr_coef2, seven_corr_coef2, fourteen_corr_coef2)
-# total_corr2$wave <- rep('Wave 2', times=105)
-# 
-# total_correlation <- rbind(total_corr, total_corr2)
-# 
-# total_correlation$period <- factor(total_correlation$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
-# total_correlation <- total_correlation %>%
-#   mutate(
-#     significant = case_when(
-#       p_val < 0.01 ~ 'Yes',
-#       p_val >= 0.01 ~ 'No'
-#     )
-#   )
+# Wave 2
+zero_corr_coef2 <- corr_coef(zero_corr2)
+zero_corr_coef2$period <- rep('Lockdown', times=35)
 
-total_corr$period <- factor(total_corr$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
-total_corr <- total_corr %>%
+seven_corr_coef2 <- corr_coef(seven_corr2)
+seven_corr_coef2$period <- rep('7 Days after lockdown', times=35)
+
+fourteen_corr_coef2 <- corr_coef(fourteen_corr2)
+fourteen_corr_coef2$period <- rep('14 Days after lockdown', times=35)
+
+total_corr2 <- rbind(zero_corr_coef2, seven_corr_coef2, fourteen_corr_coef2)
+total_corr2$wave <- rep('Wave 2', times=105)
+
+# Combine
+total_correlation <- rbind(total_corr, total_corr2)
+
+total_correlation$period <- factor(total_correlation$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
+total_correlation <- total_correlation %>%
   mutate(
     significant = case_when(
       p_val < 0.01 ~ 'Yes',
@@ -389,7 +393,7 @@ total_corr <- total_corr %>%
     )
   )
 
-write_csv(total_corr, 'Correlation_Analysis/corr_coef.csv')
+write_csv(total_correlation, 'Correlation_Analysis/corr_coef.csv')
 ```
 
 Get coefficient data for each time lag
@@ -397,6 +401,7 @@ Add period column, later factor it appropriately
 Combine into one df (total)
 Check if each p-value is statistically significant (<0.01)
 ```{r}
+# Wave 1
 zero_reg_coef <- reg_coef(zero_reg)
 zero_reg_coef$period <- rep('Lockdown', times=35)
 
@@ -409,32 +414,24 @@ fourteen_reg_coef$period <- rep('14 Days after lockdown', times=35)
 total_reg <- rbind(zero_reg_coef, seven_reg_coef, fourteen_reg_coef)
 total_reg$wave <- rep('Wave 1', times=105)
 
-# # Wave 2
-# zero_reg_coef2 <- reg_coef(zero_reg2)
-# zero_reg_coef2$period <- rep('Lockdown', times=35)
-# 
-# seven_reg_coef2 <- reg_coef(seven_reg2)
-# seven_reg_coef2$period <- rep('7 Days after lockdown', times=35)
-# 
-# fourteen_reg_coef2 <- reg_coef(fourteen_reg2)
-# fourteen_reg_coef2$period <- rep('14 Days after lockdown', times=35)
-# 
-# total_reg2 <- rbind(zero_reg_coef2, seven_reg_coef2, fourteen_reg_coef2)
-# total_reg$wave <- rep('Wave 2', times=105)
-# 
-# total_regression <- rbind(total_reg, total_reg2)
-# 
-# total_regression$period <- factor(total_regression$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
-# total_regression <- total_regression %>%
-#   mutate(
-#     significant = case_when(
-#       p_val < 0.01 ~ 'Yes',
-#       p_val >= 0.01 ~ 'No'
-#     )
-#   )
+# Wave 2
+zero_reg_coef2 <- reg_coef(zero_reg2)
+zero_reg_coef2$period <- rep('Lockdown', times=35)
 
-total_reg$period <- factor(total_reg$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
-total_reg <- total_reg %>%
+seven_reg_coef2 <- reg_coef(seven_reg2)
+seven_reg_coef2$period <- rep('7 Days after lockdown', times=35)
+
+fourteen_reg_coef2 <- reg_coef(fourteen_reg2)
+fourteen_reg_coef2$period <- rep('14 Days after lockdown', times=35)
+
+total_reg2 <- rbind(zero_reg_coef2, seven_reg_coef2, fourteen_reg_coef2)
+total_reg2$wave <- rep('Wave 2', times=105)
+
+# Combine
+total_regression <- rbind(total_reg, total_reg2)
+
+total_regression$period <- factor(total_regression$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
+total_regression <- total_regression %>%
   mutate(
     significant = case_when(
       p_val < 0.01 ~ 'Yes',
@@ -442,15 +439,15 @@ total_reg <- total_reg %>%
     )
   )
 
-write_csv(total_reg, 'Correlation_Analysis/reg_coef.csv')
+write_csv(total_regression, 'Correlation_Analysis/reg_coef.csv')
 ```
 
 ## Barplot
 ```{r}
-p <- ggplot(total_reg, aes(x=place, y=coefficient, fill=mobility)) +
+p <- ggplot(total_regression, aes(x=place, y=coefficient, fill=mobility)) +
   geom_col(position = 'dodge') +
   geom_vline(xintercept = c(1.5, 2.5, 3.5, 4.5)) +
-  facet_grid(rows=vars(period)) +
+  facet_grid(rows=vars(period), cols=vars(wave)) +
   ylab('regression coefficient')
   # theme_bw()
 ggsave('Correlation_analysis/reg_barplot.png',
@@ -465,10 +462,11 @@ Regression coefficients of each type of mobility with Rt as the dependent variab
 
 ## Lineplot
 ```{r}
-d <- filter(total_corr, mobility=='global')
+d <- filter(total_correlation, mobility=='global')
 p <- ggplot(d, aes(x=period, y=coefficient, group=place, color=place)) +
   geom_point(d, mapping=aes(shape=significant), size=3) +
   geom_line(linetype='dashed') +
+  facet_grid(cols=vars(wave)) +
   ylab('correlation coefficient')
   # theme_bw()
 ggsave('Correlation_analysis/corr_lineplot.png',
@@ -497,8 +495,8 @@ tor <- ggplot(t, aes(x=global, y=`Mean(R)`)) +
   geom_smooth(method='lm') +
   labs(title='toronto after lockdown') +
   annotate("text", x = -8, y = 1.5, label = "Pearson's coef=-0.455\nMean(R)=-0.009(global) + 0.835")
-ggsave('Correlation_analysis/ontatio14.png',
+ggsave('Correlation_analysis/examples/ontario14.png',
        ont)
-ggsave('Correlation_analysis/toronto0.png',
+ggsave('Correlation_analysis/examples/toronto0.png',
        tor)
 ```
