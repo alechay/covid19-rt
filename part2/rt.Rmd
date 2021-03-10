@@ -1,0 +1,158 @@
+---
+title: "Estimated Rt"
+output: html_notebook
+---
+
+## Load packages
+```{r}
+library(tidyverse)
+library(EpiEstim)
+```
+
+## Load data
+```{r}
+# assume that missing data means zero cases for that day
+
+data <- read_csv('data/daily_change_in_cases_by_phu.csv') %>% 
+  select(Date, Durham_Region_Health_Department, Halton_Region_Health_Department, Peel_Public_Health, Toronto_Public_Health, York_Region_Public_Health_Services) %>% 
+  rename(durham=Durham_Region_Health_Department, halton=Halton_Region_Health_Department, peel=Peel_Public_Health, toronto=Toronto_Public_Health, york=York_Region_Public_Health_Services) %>% 
+  replace(is.na(.), 0)
+
+write_csv(rt_data, 'data/cleaned_data.csv')
+```
+
+```{r}
+# replace negative counts with zero
+
+rt_data <- data %>% 
+  mutate(across(where(is.numeric), ~ replace(., .<0, 0)))
+write_csv(rt_data, 'estR/rt_calc_data.csv')
+```
+
+
+## Make df's for R calculation
+```{r}
+toronto <- rt_data %>% 
+  select(Date, toronto) %>% 
+  rename(dates=Date, I=toronto)
+peel <- rt_data %>% 
+  select(Date, peel) %>% 
+  rename(dates=Date, I=peel)
+york <- rt_data %>% 
+  select(Date, york) %>% 
+  rename(dates=Date, I=york)
+durham <- rt_data %>% 
+  select(Date, durham) %>% 
+  rename(dates=Date, I=durham)
+halton <- rt_data %>% 
+  select(Date, halton) %>% 
+  rename(dates=Date, I=halton)
+```
+
+## Calculate Rt
+```{r}
+tr <- estimate_R(toronto, method = 'parametric_si',
+           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+pr <- estimate_R(peel, method = 'parametric_si',
+           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+yr <- estimate_R(york, method = 'parametric_si',
+           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+dr <- estimate_R(durham, method = 'parametric_si',
+           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+hr <- estimate_R(halton, method = 'parametric_si',
+           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+```
+
+## Toronto
+```{r}
+plot(tr, 'R')
+```
+
+## Peel
+```{r}
+plot(pr, 'R')
+```
+
+## York
+```{r}
+plot(yr, 'R')
+```
+
+## Durham
+```{r}
+plot(dr, 'R')
+```
+
+## Halton
+```{r}
+plot(hr, 'R')
+```
+
+```{r, include=FALSE}
+# Save plots
+
+png('estR/Toronto_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 144)
+plot(tr, 'R')
+dev.off()
+
+png('estR/Peel_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 144)
+plot(pr, 'R')
+dev.off()
+
+png('estR/York_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 144)
+plot(yr, 'R')
+dev.off()
+
+png('estR/Durham_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 144)
+plot(dr, 'R')
+dev.off()
+
+png('estR/Halton_R.png', 
+    width=11,
+    height=8.5,
+    units='in',
+    res = 144)
+plot(hr, 'R')
+dev.off()
+```
+
+## Get data in usable form
+```{r}
+tr <- tr$R %>% add_column(date_start = tr$dates[tr$R$t_start],
+                          date_end = tr$dates[tr$R$t_end])
+pr <- pr$R %>% add_column(date_start = pr$dates[pr$R$t_start],
+                          date_end = pr$dates[pr$R$t_end])
+yr <- yr$R %>% add_column(date_start = yr$dates[yr$R$t_start],
+                          date_end = yr$dates[yr$R$t_end])
+dr <- dr$R %>% add_column(date_start = dr$dates[dr$R$t_start],
+                          date_end = dr$dates[dr$R$t_end])
+hr <- hr$R %>% add_column(date_start = hr$dates[hr$R$t_start],
+                          date_end = hr$dates[hr$R$t_end])
+
+```
+
+## Write csv's
+```{r}
+write_csv(tr, 'estR/toronto_R.csv')
+write_csv(pr, 'estR/peel_R.csv')
+write_csv(yr, 'estR/york_R.csv')
+write_csv(dr, 'estR/durham_R.csv')
+write_csv(hr, 'estR/halton_R.csv')
+```
+
