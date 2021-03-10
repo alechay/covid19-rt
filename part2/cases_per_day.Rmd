@@ -25,6 +25,12 @@ timeline <- read_excel('data/restrictions.xlsx') %>%
   mutate(across(where(is.character), ~ factor(., levels = facs)))
 ```
 
+## Colors
+```{r}
+cols <- c("Lockdown"='gray33', "Stage 1/Red"='gray66', "Stage 2/Modified Stage 2/Orange"='red', "Stage 3/ Yellow"='green', "Gathering limits"='orange')
+```
+
+
 ## Roll mean
 ```{r}
 rollmean <- data %>% 
@@ -38,7 +44,8 @@ t <- ggplot() +
   geom_line(rollmean, mapping=aes(x=Date, y=toronto), color='blue') +
   geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=Toronto),
             ymin=-Inf, ymax=Inf, alpha=0.3) +
-  scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  scale_fill_manual(values=cols, name= 'Restrictions') +
   labs(title='Toronto') +
   ylab('Cases per day') +
   theme_bw()
@@ -54,7 +61,8 @@ p <- ggplot() +
   geom_line(rollmean, mapping=aes(x=Date, y=peel), color='blue') +
   geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=Peel),
             ymin=-Inf, ymax=Inf, alpha=0.3) +
-  scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  scale_fill_manual(values=cols, name= 'Restrictions') +
   labs(title='Peel') +
   ylab('Cases per day') +
   theme_bw()
@@ -70,7 +78,8 @@ y <- ggplot() +
   geom_line(rollmean, mapping=aes(x=Date, y=york), color='blue') +
   geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=York),
             ymin=-Inf, ymax=Inf, alpha=0.3) +
-  scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  scale_fill_manual(values=cols, name= 'Restrictions') +
   labs(title='York') +
   ylab('Cases per day') +
   theme_bw()
@@ -86,7 +95,8 @@ d <- ggplot() +
   geom_line(rollmean, mapping=aes(x=Date, y=durham), color='blue') +
   geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=Durham),
             ymin=-Inf, ymax=Inf, alpha=0.3) +
-  scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  scale_fill_manual(values=cols, name= 'Restrictions') +
   labs(title='Durham') +
   ylab('Cases per day') +
   theme_bw()
@@ -102,7 +112,8 @@ h <- ggplot() +
   geom_line(rollmean, mapping=aes(x=Date, y=halton), color='blue') +
   geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=Halton),
             ymin=-Inf, ymax=Inf, alpha=0.3) +
-  scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
+  scale_fill_manual(values=cols, name= 'Restrictions') +
   labs(title='Halton') +
   ylab('Cases per day') +
   theme_bw()
