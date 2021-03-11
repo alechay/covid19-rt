@@ -15,7 +15,7 @@ library(EpiEstim)
 
 data <- read_csv('data/daily_change_in_cases_by_phu.csv') %>% 
   select(Date, Durham_Region_Health_Department, Halton_Region_Health_Department, Peel_Public_Health, Toronto_Public_Health, York_Region_Public_Health_Services) %>% 
-  rename(durham=Durham_Region_Health_Department, halton=Halton_Region_Health_Department, peel=Peel_Public_Health, toronto=Toronto_Public_Health, york=York_Region_Public_Health_Services) %>% 
+  rename(Durham=Durham_Region_Health_Department, Halton=Halton_Region_Health_Department, Peel=Peel_Public_Health, Toronto=Toronto_Public_Health, York=York_Region_Public_Health_Services) %>% 
   replace(is.na(.), 0)
 
 write_csv(data, 'data/cleaned_data.csv')
@@ -33,20 +33,20 @@ write_csv(rt_data, 'estR/rt_calc_data.csv')
 ## Make df's for R calculation
 ```{r}
 toronto <- rt_data %>% 
-  select(Date, toronto) %>% 
-  rename(dates=Date, I=toronto)
+  select(Date, Toronto) %>% 
+  rename(dates=Date, I=Toronto)
 peel <- rt_data %>% 
-  select(Date, peel) %>% 
-  rename(dates=Date, I=peel)
+  select(Date, Peel) %>% 
+  rename(dates=Date, I=Peel)
 york <- rt_data %>% 
-  select(Date, york) %>% 
-  rename(dates=Date, I=york)
+  select(Date, York) %>% 
+  rename(dates=Date, I=York)
 durham <- rt_data %>% 
-  select(Date, durham) %>% 
-  rename(dates=Date, I=durham)
+  select(Date, Durham) %>% 
+  rename(dates=Date, I=Durham)
 halton <- rt_data %>% 
-  select(Date, halton) %>% 
-  rename(dates=Date, I=halton)
+  select(Date, Halton) %>% 
+  rename(dates=Date, I=Halton)
 ```
 
 ## Calculate Rt

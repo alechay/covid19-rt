@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Cases per day"
 output: html_notebook
 ---
 
@@ -7,124 +7,73 @@ output: html_notebook
 ```{r}
 library(tidyverse)
 library(zoo) # for rolling averages
-library(ggpubr)
 library(readxl)
-```
-
-## Color scale
-```{r}
-facs <- c("Lockdown", "Stage 1/Red", "Stage 2/Modified Stage 2/Orange", "Stage 3/ Yellow", "Gathering limits")
 ```
 
 ## Load data
 ```{r}
-data <- read_csv('data/cleaned_data.csv')
+# Cases data
+cases <- read_csv('data/cleaned_data.csv')
+
+# Restriction data
 timeline <- read_excel('data/restrictions.xlsx') %>% 
   mutate(Date_start = as.Date(Date_start)) %>% 
   mutate(Date_end = as.Date(Date_end)) %>% 
-  mutate(across(where(is.character), ~ factor(., levels = facs)))
+  pivot_longer(cols = Toronto:Halton, names_to = 'Region', values_to = 'Restrictions') %>% 
+  mutate(Restrictions = factor(Restrictions, 
+                               levels = c("Enhanced lockdown", "Lockdown/Stage 1", "Red/Stage 2/Modified Stage 2", "Green/Stage 3", "Orange/Gathering limits")))
 ```
 
-## Colors
+## Timeline
 ```{r}
-cols <- c("Lockdown"='gray33', "Stage 1/Red"='gray66', "Stage 2/Modified Stage 2/Orange"='red', "Stage 3/ Yellow"='green', "Gathering limits"='orange')
+Durham <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-11-23', '2020-12-26', '2021-02-16'))
+Halton <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-12-26', '2021-02-16'))
+Peel <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+Toronto <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+York <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-10-19', '2020-11-07', '2020-11-16', '2020-12-14', '2020-12-26', '2021-02-22'))
+
+breakpoints <- timeline %>% 
+  filter((Region == 'Durham' & Date_start %in% Durham) |
+         (Region == 'Halton' & Date_start %in% Halton) |
+         (Region == 'Peel' & Date_start %in% Peel) |
+         (Region == 'Toronto' & Date_start %in% Toronto) |
+         (Region == 'York' & Date_start %in% York))
 ```
 
-
-## Roll mean
+## Roll mean and tidy data
 ```{r}
-rollmean <- data %>% 
-  mutate(across(where(is.numeric), ~ rollmean(., k = 7, fill = NA)))
+tidy_cases <- cases %>% 
+  pivot_longer(cols = Durham:York, 
+               names_to = 'Region', values_to = 'Cases per day')
+
+rollmean <- cases %>% 
+  mutate(across(where(is.numeric), ~ rollmean(., k = 7, fill = NA))) %>% 
+  pivot_longer(cols = Durham:York, 
+               names_to = 'Region', values_to = 'Cases per day')
 ```
 
-## Case graphs
+## Color scale
 ```{r}
-t <- ggplot() +
-  geom_line(data, mapping=aes(x=Date, y=toronto)) +
-  geom_line(rollmean, mapping=aes(x=Date, y=toronto), color='blue') +
-  geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=Toronto),
+fill <- c("Enhanced lockdown"='gray33', "Lockdown/Stage 1"='gray66', "Red/Stage 2/Modified Stage 2"='red', "Green/Stage 3"='green', "Orange/Gathering limits"='orange')
+```
+
+## Graphs
+```{r}
+cases_plot <- ggplot() +
+  geom_bar(tidy_cases, mapping=aes(x=Date, y=`Cases per day`), stat="identity") +
+  geom_line(rollmean, mapping=aes(x=Date, y=`Cases per day`), color='blue') +
+  geom_rect(timeline, 
+            mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
             ymin=-Inf, ymax=Inf, alpha=0.3) +
-  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
-  scale_fill_manual(values=cols, name= 'Restrictions') +
-  labs(title='Toronto') +
-  ylab('Cases per day') +
+  geom_vline(breakpoints,
+             mapping = aes(xintercept=Date_start),
+             linetype = 'dashed') +
+  scale_fill_manual(values=fill) +
+  facet_grid(rows=vars(Region)) +
   theme_bw()
 
-ggsave('graphs/toronto.png', t, height = 8.5, width = 11, units = 'in')
+ggsave('graphs/cases.png', cases_plot, height = 8.5, width = 11, units = 'in')
 
-t
-```
-
-```{r}
-p <- ggplot() +
-  geom_line(data, mapping=aes(x=Date, y=peel)) +
-  geom_line(rollmean, mapping=aes(x=Date, y=peel), color='blue') +
-  geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=Peel),
-            ymin=-Inf, ymax=Inf, alpha=0.3) +
-  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
-  scale_fill_manual(values=cols, name= 'Restrictions') +
-  labs(title='Peel') +
-  ylab('Cases per day') +
-  theme_bw()
-
-ggsave('graphs/peel.png', p, height = 8.5, width = 11, units = 'in')
-
-p
-```
-
-```{r}
-y <- ggplot() +
-  geom_line(data, mapping=aes(x=Date, y=york)) +
-  geom_line(rollmean, mapping=aes(x=Date, y=york), color='blue') +
-  geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=York),
-            ymin=-Inf, ymax=Inf, alpha=0.3) +
-  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
-  scale_fill_manual(values=cols, name= 'Restrictions') +
-  labs(title='York') +
-  ylab('Cases per day') +
-  theme_bw()
-
-ggsave('graphs/york.png', y, height = 8.5, width = 11, units = 'in')
-
-y
-```
-
-```{r}
-d <- ggplot() +
-  geom_line(data, mapping=aes(x=Date, y=durham)) +
-  geom_line(rollmean, mapping=aes(x=Date, y=durham), color='blue') +
-  geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=Durham),
-            ymin=-Inf, ymax=Inf, alpha=0.3) +
-  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
-  scale_fill_manual(values=cols, name= 'Restrictions') +
-  labs(title='Durham') +
-  ylab('Cases per day') +
-  theme_bw()
-
-ggsave('graphs/durham.png', d, height = 8.5, width = 11, units = 'in')
-
-d
-```
-
-```{r}
-h <- ggplot() +
-  geom_line(data, mapping=aes(x=Date, y=halton)) +
-  geom_line(rollmean, mapping=aes(x=Date, y=halton), color='blue') +
-  geom_rect(timeline, mapping=aes(xmin=Date_start, xmax=Date_end, fill=Halton),
-            ymin=-Inf, ymax=Inf, alpha=0.3) +
-  # scale_fill_brewer(palette = 'YlOrRd', name = 'Restrictions', direction=-1) +
-  scale_fill_manual(values=cols, name= 'Restrictions') +
-  labs(title='Halton') +
-  ylab('Cases per day') +
-  theme_bw()
-
-ggsave('graphs/halton.png', h, height = 8.5, width = 11, units = 'in')
-
-h
-```
-
-```{r}
-combined <- ggarrange(t, p, y, d, h, ncol=1)
-ggsave('graphs/combined.png', combined, height = 8.5, width = 11, units = 'in')
+cases_plot
 ```
 
