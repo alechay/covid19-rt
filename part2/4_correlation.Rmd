@@ -1,0 +1,111 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Make graphs
+Toronto
+```{r}
+breaks <- as.Date(c('2020-03-17', '2020-06-24', '2020-09-28', '2020-11-20','2020-12-14', '2021-03-07'))
+labels <- c("Lockdown", "Decreasing restrictions", "Second Wave Announcement", "Red - Control", "Lockdown", "End")
+t <- data.frame(breaks, labels)
+
+tr_plot <- ggplot() +
+  geom_line(tr, mapping=aes(date_start, `Mean(R)`)) +
+  labs(title='Toronto Estimated Rt') +
+  xlab('Date') +
+  ylab('Rt') +
+  annotate('rect', xmin=breaks[1], xmax=breaks[2],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.3) +
+  annotate('rect', xmin=breaks[2], xmax=breaks[3],
+           ymin=-Inf, ymax=+Inf,
+           fill='green', alpha=0.2) +
+  annotate('rect', xmin=breaks[4], xmax=breaks[5],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.1) +
+  annotate('rect', xmin=breaks[5], xmax=breaks[6],
+         ymin=-Inf, ymax=+Inf,
+         fill='red', alpha=0.3) +
+  geom_vline(xintercept=breaks[1:5],
+             linetype = "dashed") +
+  geom_label_repel(t[1:5,],
+                   mapping=aes(label=labels, x=breaks, y=3.5),
+                   size=2.5)
+
+tr_plot
+```
+
+Peel
+```{r}
+breaks <- as.Date(c('2020-03-17', '2020-06-22', '2020-10-11', '2020-11-09', '2020-12-14', '2021-03-07'))
+labels <- c('Lockdown', 'Decreasing Restrictions', 'Modified Stage 2', 'Red - Control', 'Lockdown', "End")
+p <- data.frame(breaks, labels)
+
+pr_plot <- ggplot() +
+  geom_line(pr, mapping=aes(date_start, `Mean(R)`)) +
+  labs(title='Peel Estimated Rt') +
+  xlab('Date') +
+  ylab('Rt') +
+  annotate('rect', xmin=breaks[1], xmax=breaks[2],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.3) +
+  annotate('rect', xmin=breaks[2], xmax=breaks[3],
+           ymin=-Inf, ymax=+Inf,
+           fill='green', alpha=0.2) +
+  annotate('rect', xmin=breaks[4], xmax=breaks[5],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.1) +
+  annotate('rect', xmin=breaks[5], xmax=breaks[6],
+         ymin=-Inf, ymax=+Inf,
+         fill='red', alpha=0.3) +
+  geom_vline(xintercept=breaks[1:5],
+             linetype = "dashed") +
+  geom_label_repel(p[1:5,],
+                   mapping=aes(label=labels, x=breaks, y=3.5),
+                   size=2.5)
+
+pr_plot
+```
+
+York
+```{r}
+breaks <- as.Date(c('2020-03-17', '2020-05-19', '2020-10-19', '2020-11-16','2020-12-14', '2021-03-07'))
+labels <- c("Lockdown", "Decreasing restrictions", "Modified Stage 2", "Red - Control", "Lockdown", "End")
+y <- data.frame(breaks, labels)
+
+yr_plot <- ggplot() +
+  geom_line(yr, mapping=aes(date_start, `Mean(R)`)) +
+  labs(title='York Estimated Rt') +
+  xlab('Date') +
+  ylab('Rt') +
+  annotate('rect', xmin=breaks[1], xmax=breaks[2],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.3) +
+  annotate('rect', xmin=breaks[2], xmax=breaks[3],
+           ymin=-Inf, ymax=+Inf,
+           fill='green', alpha=0.2) +
+  annotate('rect', xmin=breaks[4], xmax=breaks[5],
+           ymin=-Inf, ymax=+Inf,
+           fill='red', alpha=0.1) +
+  annotate('rect', xmin=breaks[5], xmax=breaks[6],
+         ymin=-Inf, ymax=+Inf,
+         fill='red', alpha=0.3) +
+  geom_vline(xintercept=breaks[1:5],
+             linetype = "dashed") +
+  geom_label_repel(y[1:5,],
+                   mapping=aes(label=labels, x=breaks, y=3.5),
+                   size=2.5)
+
+yr_plot
+```
+
+Durham
+```{r}
+
+```
+
+Halton
+```{r}
+
+```
