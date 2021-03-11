@@ -18,7 +18,7 @@ data <- read_csv('data/daily_change_in_cases_by_phu.csv') %>%
   rename(durham=Durham_Region_Health_Department, halton=Halton_Region_Health_Department, peel=Peel_Public_Health, toronto=Toronto_Public_Health, york=York_Region_Public_Health_Services) %>% 
   replace(is.na(.), 0)
 
-write_csv(rt_data, 'data/cleaned_data.csv')
+write_csv(data, 'data/cleaned_data.csv')
 ```
 
 ```{r}
