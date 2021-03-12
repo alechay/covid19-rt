@@ -11,24 +11,29 @@ library(EpiEstim)
 
 ## Load data
 ```{r}
-# assume that missing data means zero cases for that day
+regions <- c('Peel Public Health', 'Halton Region Health Department', "Toronto Public Health", "York Region Public Health Services", "Durham Region Health Department")
+data <- read_csv('data/conposcovidloc.csv') %>% 
+  filter(Reporting_PHU %in% regions) %>% 
+  group_by(Reporting_PHU, Case_Reported_Date) %>% 
+  count() %>% 
+  rename(Region=Reporting_PHU, Date=Case_Reported_Date) %>% 
+  mutate(Region = case_when(Region == "Durham Region Health Department" ~ 'Durham',
+                            Region == 'Halton Region Health Department' ~ 'Halton',
+                            Region == 'Peel Public Health' ~ 'Peel',
+                            Region == "Toronto Public Health" ~ 'Toronto',
+                            Region == "York Region Public Health Services" ~ 'York')) %>% 
+  pivot_wider(names_from = Region, values_from = n, values_fill = 0)
 
-data <- read_csv('data/daily_change_in_cases_by_phu.csv') %>% 
-  select(Date, Durham_Region_Health_Department, Halton_Region_Health_Department, Peel_Public_Health, Toronto_Public_Health, York_Region_Public_Health_Services) %>% 
-  rename(Durham=Durham_Region_Health_Department, Halton=Halton_Region_Health_Department, Peel=Peel_Public_Health, Toronto=Toronto_Public_Health, York=York_Region_Public_Health_Services) %>% 
-  replace(is.na(.), 0)
-
-write_csv(data, 'data/cleaned_data.csv')
+write_csv(data, 'data/cleaned_cases.csv')
 ```
 
+## Summary of data
 ```{r}
-# replace negative counts with zero
+summary(data)
 
 rt_data <- data %>% 
-  mutate(across(where(is.numeric), ~ replace(., .<0, 0)))
-write_csv(rt_data, 'estR/rt_calc_data.csv')
+  filter(Date >= '2020-03-16')
 ```
-
 
 ## Make df's for R calculation
 ```{r}
@@ -134,25 +139,33 @@ dev.off()
 
 ## Get data in usable form
 ```{r}
-tr <- tr$R %>% add_column(date_start = tr$dates[tr$R$t_start],
-                          date_end = tr$dates[tr$R$t_end])
-pr <- pr$R %>% add_column(date_start = pr$dates[pr$R$t_start],
-                          date_end = pr$dates[pr$R$t_end])
-yr <- yr$R %>% add_column(date_start = yr$dates[yr$R$t_start],
-                          date_end = yr$dates[yr$R$t_end])
-dr <- dr$R %>% add_column(date_start = dr$dates[dr$R$t_start],
-                          date_end = dr$dates[dr$R$t_end])
-hr <- hr$R %>% add_column(date_start = hr$dates[hr$R$t_start],
-                          date_end = hr$dates[hr$R$t_end])
+tr <- tr$R %>% 
+  add_column(date_start = tr$dates[tr$R$t_start],
+             date_end = tr$dates[tr$R$t_end]) %>% 
+  add_column(Region = rep('Toronto', times=nrow(tr$R)))
+pr <- pr$R %>% 
+  add_column(date_start = pr$dates[pr$R$t_start],
+             date_end = pr$dates[pr$R$t_end]) %>% 
+  add_column(Region = rep('Peel', times=nrow(pr$R)))
+yr <- yr$R %>% 
+  add_column(date_start = yr$dates[yr$R$t_start],
+             date_end = yr$dates[yr$R$t_end]) %>% 
+  add_column(Region = rep('York', times=nrow(yr$R)))
+dr <- dr$R %>% 
+  add_column(date_start = dr$dates[dr$R$t_start],
+             date_end = dr$dates[dr$R$t_end]) %>% 
+  add_column(Region = rep('Durham', times=nrow(dr$R)))
+hr <- hr$R %>% 
+  add_column(date_start = hr$dates[hr$R$t_start],
+             date_end = hr$dates[hr$R$t_end]) %>% 
+  add_column(Region = rep('Halton', times=nrow(hr$R)))
 
 ```
+
+
 
 ## Write csv's
 ```{r}
-write_csv(tr, 'estR/toronto_R.csv')
-write_csv(pr, 'estR/peel_R.csv')
-write_csv(yr, 'estR/york_R.csv')
-write_csv(dr, 'estR/durham_R.csv')
-write_csv(hr, 'estR/halton_R.csv')
+estR <- rbind(tr, pr, yr, dr, hr)
+write_csv(estR, 'estR/estR.csv')
 ```
-

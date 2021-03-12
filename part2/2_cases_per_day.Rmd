@@ -13,7 +13,7 @@ library(readxl)
 ## Load data
 ```{r}
 # Cases data
-cases <- read_csv('data/cleaned_data.csv')
+cases <- read_csv('data/cleaned_cases.csv')
 
 # Restriction data
 timeline <- read_excel('data/restrictions.xlsx') %>% 
@@ -49,7 +49,8 @@ tidy_cases <- cases %>%
 rollmean <- cases %>% 
   mutate(across(where(is.numeric), ~ rollmean(., k = 7, fill = NA))) %>% 
   pivot_longer(cols = Durham:York, 
-               names_to = 'Region', values_to = 'Cases per day')
+               names_to = 'Region', values_to = 'Cases per day') %>% 
+  filter(Date >= '2020-03-16')
 ```
 
 ## Color scale
@@ -76,4 +77,3 @@ ggsave('graphs/cases.png', cases_plot, height = 8.5, width = 11, units = 'in')
 
 cases_plot
 ```
-
