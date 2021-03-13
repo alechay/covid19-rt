@@ -1749,125 +1749,226 @@ summary {
 
 
 <!-- rnb-text-begin -->
-<div id="make-graphs" class="section level2">
-<h2>Make graphs</h2>
-<p>Toronto</p>
+<div id="load-packages" class="section level2">
+<h2>Load packages</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYnJlYWtzIDwtIGFzLkRhdGUoYygnMjAyMC0wMy0xNycsICcyMDIwLTA2LTI0JywgJzIwMjAtMDktMjgnLCAnMjAyMC0xMS0yMCcsJzIwMjAtMTItMTQnLCAnMjAyMS0wMy0wNycpKVxubGFiZWxzIDwtIGMoXCJMb2NrZG93blwiLCBcIkRlY3JlYXNpbmcgcmVzdHJpY3Rpb25zXCIsIFwiU2Vjb25kIFdhdmUgQW5ub3VuY2VtZW50XCIsIFwiUmVkIC0gQ29udHJvbFwiLCBcIkxvY2tkb3duXCIsIFwiRW5kXCIpXG50IDwtIGRhdGEuZnJhbWUoYnJlYWtzLCBsYWJlbHMpXG5cbnRyX3Bsb3QgPC0gZ2dwbG90KCkgK1xuICBnZW9tX2xpbmUodHIsIG1hcHBpbmc9YWVzKGRhdGVfc3RhcnQsIGBNZWFuKFIpYCkpICtcbiAgbGFicyh0aXRsZT0nVG9yb250byBFc3RpbWF0ZWQgUnQnKSArXG4gIHhsYWIoJ0RhdGUnKSArXG4gIHlsYWIoJ1J0JykgK1xuICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzFdLCB4bWF4PWJyZWFrc1syXSxcbiAgICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsXG4gICAgICAgICAgIGZpbGw9J3JlZCcsIGFscGhhPTAuMykgK1xuICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzJdLCB4bWF4PWJyZWFrc1szXSxcbiAgICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsXG4gICAgICAgICAgIGZpbGw9J2dyZWVuJywgYWxwaGE9MC4yKSArXG4gIGFubm90YXRlKCdyZWN0JywgeG1pbj1icmVha3NbNF0sIHhtYXg9YnJlYWtzWzVdLFxuICAgICAgICAgICB5bWluPS1JbmYsIHltYXg9K0luZixcbiAgICAgICAgICAgZmlsbD0ncmVkJywgYWxwaGE9MC4xKSArXG4gIGFubm90YXRlKCdyZWN0JywgeG1pbj1icmVha3NbNV0sIHhtYXg9YnJlYWtzWzZdLFxuICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsXG4gICAgICAgICBmaWxsPSdyZWQnLCBhbHBoYT0wLjMpICtcbiAgZ2VvbV92bGluZSh4aW50ZXJjZXB0PWJyZWFrc1sxOjVdLFxuICAgICAgICAgICAgIGxpbmV0eXBlID0gXCJkYXNoZWRcIikgK1xuICBnZW9tX2xhYmVsX3JlcGVsKHRbMTo1LF0sXG4gICAgICAgICAgICAgICAgICAgbWFwcGluZz1hZXMobGFiZWw9bGFiZWxzLCB4PWJyZWFrcywgeT0zLjUpLFxuICAgICAgICAgICAgICAgICAgIHNpemU9Mi41KVxuXG50cl9wbG90XG5gYGAifQ== -->
-<pre class="r"><code>breaks &lt;- as.Date(c(&#39;2020-03-17&#39;, &#39;2020-06-24&#39;, &#39;2020-09-28&#39;, &#39;2020-11-20&#39;,&#39;2020-12-14&#39;, &#39;2021-03-07&#39;))
-labels &lt;- c(&quot;Lockdown&quot;, &quot;Decreasing restrictions&quot;, &quot;Second Wave Announcement&quot;, &quot;Red - Control&quot;, &quot;Lockdown&quot;, &quot;End&quot;)
-t &lt;- data.frame(breaks, labels)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5gYGAifQ== -->
+<pre class="r"><code>library(tidyverse)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiUmVnaXN0ZXJlZCBTMyBtZXRob2RzIG92ZXJ3cml0dGVuIGJ5ICdkYnBseXInOlxuICBtZXRob2QgICAgICAgICBmcm9tXG4gIHByaW50LnRibF9sYXp5ICAgICBcbiAgcHJpbnQudGJsX3NxbCAgICAgIFxu4pSA4pSAIEF0dGFjaGluZyBwYWNrYWdlcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlIDEuMy4wIOKUgOKUgFxu4pyTIGdncGxvdDIgMy4zLjIgICAgIOKckyBwdXJyciAgIDAuMy40XG7inJMgdGliYmxlICAzLjAuMyAgICAg4pyTIGRwbHlyICAgMS4wLjJcbuKckyB0aWR5ciAgIDEuMS4xICAgICDinJMgc3RyaW5nciAxLjQuMFxu4pyTIHJlYWRyICAgMS4zLjEgICAgIOKckyBmb3JjYXRzIDAuNS4wXG7ilIDilIAgQ29uZmxpY3RzIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgCB0aWR5dmVyc2VfY29uZmxpY3RzKCkg4pSA4pSAXG54IGRwbHlyOjpmaWx0ZXIoKSBtYXNrcyBzdGF0czo6ZmlsdGVyKClcbnggZHBseXI6OmxhZygpICAgIG1hc2tzIHN0YXRzOjpsYWcoKVxuIn0= -->
+<pre><code>Registered S3 methods overwritten by &#39;dbplyr&#39;:
+  method         from
+  print.tbl_lazy     
+  print.tbl_sql      
+── Attaching packages ───────────────────────────────────────── tidyverse 1.3.0 ──
+✓ ggplot2 3.3.2     ✓ purrr   0.3.4
+✓ tibble  3.0.3     ✓ dplyr   1.0.2
+✓ tidyr   1.1.1     ✓ stringr 1.4.0
+✓ readr   1.3.1     ✓ forcats 0.5.0
+── Conflicts ──────────────────────────────────────────── tidyverse_conflicts() ──
+x dplyr::filter() masks stats::filter()
+x dplyr::lag()    masks stats::lag()</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZWFkeGwpXG5saWJyYXJ5KHBsbSlcbmBgYCJ9 -->
+<pre class="r"><code>library(readxl)
+library(plm)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5BdHRhY2hpbmcgcGFja2FnZTog4oCYcGxt4oCZXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0cyBhcmUgbWFza2VkIGZyb20g4oCYcGFja2FnZTpkcGx5cuKAmTpcblxuICAgIGJldHdlZW4sIGxhZywgbGVhZFxuIn0= -->
+<pre><code>
+Attaching package: ‘plm’
 
-tr_plot &lt;- ggplot() +
-  geom_line(tr, mapping=aes(date_start, `Mean(R)`)) +
-  labs(title=&#39;Toronto Estimated Rt&#39;) +
-  xlab(&#39;Date&#39;) +
-  ylab(&#39;Rt&#39;) +
-  annotate(&#39;rect&#39;, xmin=breaks[1], xmax=breaks[2],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;red&#39;, alpha=0.3) +
-  annotate(&#39;rect&#39;, xmin=breaks[2], xmax=breaks[3],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;green&#39;, alpha=0.2) +
-  annotate(&#39;rect&#39;, xmin=breaks[4], xmax=breaks[5],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;red&#39;, alpha=0.1) +
-  annotate(&#39;rect&#39;, xmin=breaks[5], xmax=breaks[6],
-         ymin=-Inf, ymax=+Inf,
-         fill=&#39;red&#39;, alpha=0.3) +
-  geom_vline(xintercept=breaks[1:5],
-             linetype = &quot;dashed&quot;) +
-  geom_label_repel(t[1:5,],
-                   mapping=aes(label=labels, x=breaks, y=3.5),
-                   size=2.5)
+The following objects are masked from ‘package:dplyr’:
 
-tr_plot</code></pre>
+    between, lag, lead</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="load-rt-and-mobility-data" class="section level2">
+<h2>Load Rt and Mobility data</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBSdCBkYXRhXG5ydCA8LSByZWFkX2NzdignZXN0Ui9lc3RSLmNzdicpICU+JSBcbiAgc2VsZWN0KGBNZWFuKFIpYCwgZGF0ZV9zdGFydCwgUmVnaW9uKSAlPiUgXG4gIHJlbmFtZShSdD1gTWVhbihSKWAsIERhdGU9ZGF0ZV9zdGFydClcblxuIyBNb2JpbGl0eSBkYXRhXG5yZWdpb25zID0gYygnUmVnaW9uYWwgTXVuaWNpcGFsaXR5IG9mIER1cmhhbScsICdSZWdpb25hbCBNdW5pY2lwYWxpdHkgb2YgSGFsdG9uJywgJ1JlZ2lvbmFsIE11bmljaXBhbGl0eSBvZiBQZWVsJywgJ1Rvcm9udG8gRGl2aXNpb24nLCAnUmVnaW9uYWwgTXVuaWNpcGFsaXR5IG9mIFlvcmsnKVxubW9iIDwtIHJlYWRfY3N2KCdkYXRhLzIwMjBfQ0FfUmVnaW9uX01vYmlsaXR5X1JlcG9ydC5jc3YnKSAlPiUgXG4gIHJlbmFtZShSZXRhaWw9cmV0YWlsX2FuZF9yZWNyZWF0aW9uX3BlcmNlbnRfY2hhbmdlX2Zyb21fYmFzZWxpbmUsXG4gICAgICAgICBHcm9jZXJ5PWdyb2NlcnlfYW5kX3BoYXJtYWN5X3BlcmNlbnRfY2hhbmdlX2Zyb21fYmFzZWxpbmUsXG4gICAgICAgICBQYXJrcz1wYXJrc19wZXJjZW50X2NoYW5nZV9mcm9tX2Jhc2VsaW5lLFxuICAgICAgICAgVHJhbnNpdD10cmFuc2l0X3N0YXRpb25zX3BlcmNlbnRfY2hhbmdlX2Zyb21fYmFzZWxpbmUsXG4gICAgICAgICBXb3JrcGxhY2VzPXdvcmtwbGFjZXNfcGVyY2VudF9jaGFuZ2VfZnJvbV9iYXNlbGluZSxcbiAgICAgICAgIFJlc2lkZW50aWFsPXJlc2lkZW50aWFsX3BlcmNlbnRfY2hhbmdlX2Zyb21fYmFzZWxpbmUpICU+JSBcbiAgc2VsZWN0KHN1Yl9yZWdpb25fMiwgZGF0ZSwgXG4gICAgICAgICBSZXRhaWwsIEdyb2NlcnksIFBhcmtzLCBUcmFuc2l0LCBXb3JrcGxhY2VzLCBSZXNpZGVudGlhbCkgJT4lIFxuICBmaWx0ZXIoc3ViX3JlZ2lvbl8yICVpbiUgcmVnaW9ucykgJT4lIFxuICBtdXRhdGUoR2xvYmFsID0gKFJldGFpbCArIEdyb2NlcnkgKyBQYXJrcyArIFRyYW5zaXQgKyBXb3JrcGxhY2VzICsgUmVzaWRlbnRpYWwpLzYpJT4lXG4gIHJlbmFtZShSZWdpb249c3ViX3JlZ2lvbl8yLCBEYXRlPWRhdGUpICU+JSBcbiAgbXV0YXRlKFJlZ2lvbiA9IGNhc2Vfd2hlbihSZWdpb24gPT0gJ1JlZ2lvbmFsIE11bmljaXBhbGl0eSBvZiBEdXJoYW0nIH4gJ0R1cmhhbScsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgUmVnaW9uID09ICdSZWdpb25hbCBNdW5pY2lwYWxpdHkgb2YgSGFsdG9uJyB+ICdIYWx0b24nLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFJlZ2lvbiA9PSAnUmVnaW9uYWwgTXVuaWNpcGFsaXR5IG9mIFBlZWwnIH4gJ1BlZWwnLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFJlZ2lvbiA9PSAnVG9yb250byBEaXZpc2lvbicgfiAnVG9yb250bycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgUmVnaW9uID09ICdSZWdpb25hbCBNdW5pY2lwYWxpdHkgb2YgWW9yaycgfiAnWW9yaycpKVxuYGBgIn0= -->
+<pre class="r"><code># Rt data
+rt &lt;- read_csv(&#39;estR/estR.csv&#39;) %&gt;% 
+  select(`Mean(R)`, date_start, Region) %&gt;% 
+  rename(Rt=`Mean(R)`, Date=date_start)
+
+# Mobility data
+regions = c(&#39;Regional Municipality of Durham&#39;, &#39;Regional Municipality of Halton&#39;, &#39;Regional Municipality of Peel&#39;, &#39;Toronto Division&#39;, &#39;Regional Municipality of York&#39;)
+mob &lt;- read_csv(&#39;data/2020_CA_Region_Mobility_Report.csv&#39;) %&gt;% 
+  rename(Retail=retail_and_recreation_percent_change_from_baseline,
+         Grocery=grocery_and_pharmacy_percent_change_from_baseline,
+         Parks=parks_percent_change_from_baseline,
+         Transit=transit_stations_percent_change_from_baseline,
+         Workplaces=workplaces_percent_change_from_baseline,
+         Residential=residential_percent_change_from_baseline) %&gt;% 
+  select(sub_region_2, date, 
+         Retail, Grocery, Parks, Transit, Workplaces, Residential) %&gt;% 
+  filter(sub_region_2 %in% regions) %&gt;% 
+  mutate(Global = (Retail + Grocery + Parks + Transit + Workplaces + Residential)/6)%&gt;%
+  rename(Region=sub_region_2, Date=date) %&gt;% 
+  mutate(Region = case_when(Region == &#39;Regional Municipality of Durham&#39; ~ &#39;Durham&#39;,
+                            Region == &#39;Regional Municipality of Halton&#39; ~ &#39;Halton&#39;,
+                            Region == &#39;Regional Municipality of Peel&#39; ~ &#39;Peel&#39;,
+                            Region == &#39;Toronto Division&#39; ~ &#39;Toronto&#39;,
+                            Region == &#39;Regional Municipality of York&#39; ~ &#39;York&#39;))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Peel</p>
+</div>
+<div id="load-restriction-data" class="section level2">
+<h2>Load restriction data</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYnJlYWtzIDwtIGFzLkRhdGUoYygnMjAyMC0wMy0xNycsICcyMDIwLTA2LTIyJywgJzIwMjAtMTAtMTEnLCAnMjAyMC0xMS0wOScsICcyMDIwLTEyLTE0JywgJzIwMjEtMDMtMDcnKSlcbmxhYmVscyA8LSBjKCdMb2NrZG93bicsICdEZWNyZWFzaW5nIFJlc3RyaWN0aW9ucycsICdNb2RpZmllZCBTdGFnZSAyJywgJ1JlZCAtIENvbnRyb2wnLCAnTG9ja2Rvd24nLCBcIkVuZFwiKVxucCA8LSBkYXRhLmZyYW1lKGJyZWFrcywgbGFiZWxzKVxuXG5wcl9wbG90IDwtIGdncGxvdCgpICtcbiAgZ2VvbV9saW5lKHByLCBtYXBwaW5nPWFlcyhkYXRlX3N0YXJ0LCBgTWVhbihSKWApKSArXG4gIGxhYnModGl0bGU9J1BlZWwgRXN0aW1hdGVkIFJ0JykgK1xuICB4bGFiKCdEYXRlJykgK1xuICB5bGFiKCdSdCcpICtcbiAgYW5ub3RhdGUoJ3JlY3QnLCB4bWluPWJyZWFrc1sxXSwgeG1heD1icmVha3NbMl0sXG4gICAgICAgICAgIHltaW49LUluZiwgeW1heD0rSW5mLFxuICAgICAgICAgICBmaWxsPSdyZWQnLCBhbHBoYT0wLjMpICtcbiAgYW5ub3RhdGUoJ3JlY3QnLCB4bWluPWJyZWFrc1syXSwgeG1heD1icmVha3NbM10sXG4gICAgICAgICAgIHltaW49LUluZiwgeW1heD0rSW5mLFxuICAgICAgICAgICBmaWxsPSdncmVlbicsIGFscGhhPTAuMikgK1xuICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzRdLCB4bWF4PWJyZWFrc1s1XSxcbiAgICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsXG4gICAgICAgICAgIGZpbGw9J3JlZCcsIGFscGhhPTAuMSkgK1xuICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzVdLCB4bWF4PWJyZWFrc1s2XSxcbiAgICAgICAgIHltaW49LUluZiwgeW1heD0rSW5mLFxuICAgICAgICAgZmlsbD0ncmVkJywgYWxwaGE9MC4zKSArXG4gIGdlb21fdmxpbmUoeGludGVyY2VwdD1icmVha3NbMTo1XSxcbiAgICAgICAgICAgICBsaW5ldHlwZSA9IFwiZGFzaGVkXCIpICtcbiAgZ2VvbV9sYWJlbF9yZXBlbChwWzE6NSxdLFxuICAgICAgICAgICAgICAgICAgIG1hcHBpbmc9YWVzKGxhYmVsPWxhYmVscywgeD1icmVha3MsIHk9My41KSxcbiAgICAgICAgICAgICAgICAgICBzaXplPTIuNSlcblxucHJfcGxvdFxuYGBgIn0= -->
-<pre class="r"><code>breaks &lt;- as.Date(c(&#39;2020-03-17&#39;, &#39;2020-06-22&#39;, &#39;2020-10-11&#39;, &#39;2020-11-09&#39;, &#39;2020-12-14&#39;, &#39;2021-03-07&#39;))
-labels &lt;- c(&#39;Lockdown&#39;, &#39;Decreasing Restrictions&#39;, &#39;Modified Stage 2&#39;, &#39;Red - Control&#39;, &#39;Lockdown&#39;, &quot;End&quot;)
-p &lt;- data.frame(breaks, labels)
-
-pr_plot &lt;- ggplot() +
-  geom_line(pr, mapping=aes(date_start, `Mean(R)`)) +
-  labs(title=&#39;Peel Estimated Rt&#39;) +
-  xlab(&#39;Date&#39;) +
-  ylab(&#39;Rt&#39;) +
-  annotate(&#39;rect&#39;, xmin=breaks[1], xmax=breaks[2],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;red&#39;, alpha=0.3) +
-  annotate(&#39;rect&#39;, xmin=breaks[2], xmax=breaks[3],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;green&#39;, alpha=0.2) +
-  annotate(&#39;rect&#39;, xmin=breaks[4], xmax=breaks[5],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;red&#39;, alpha=0.1) +
-  annotate(&#39;rect&#39;, xmin=breaks[5], xmax=breaks[6],
-         ymin=-Inf, ymax=+Inf,
-         fill=&#39;red&#39;, alpha=0.3) +
-  geom_vline(xintercept=breaks[1:5],
-             linetype = &quot;dashed&quot;) +
-  geom_label_repel(p[1:5,],
-                   mapping=aes(label=labels, x=breaks, y=3.5),
-                   size=2.5)
-
-pr_plot</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBMb2NrZG93biBkYXRhXG50aW1lbGluZSA8LSByZWFkX2V4Y2VsKCdkYXRhL3Jlc3RyaWN0aW9ucy54bHN4JykgJT4lIFxuICBtdXRhdGUoRGF0ZV9zdGFydCA9IGFzLkRhdGUoRGF0ZV9zdGFydCkpICU+JSBcbiAgbXV0YXRlKERhdGVfZW5kID0gYXMuRGF0ZShEYXRlX2VuZCkpICU+JSBcbiAgcGl2b3RfbG9uZ2VyKGNvbHMgPSBUb3JvbnRvOkhhbHRvbiwgbmFtZXNfdG8gPSAnUmVnaW9uJywgdmFsdWVzX3RvID0gJ1Jlc3RyaWN0aW9ucycpICU+JSBcbiAgbXV0YXRlKFJlc3RyaWN0aW9ucyA9IGZhY3RvcihSZXN0cmljdGlvbnMsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGxldmVscyA9IGMoXCJFbmhhbmNlZCBsb2NrZG93blwiLCBcIkxvY2tkb3duL1N0YWdlIDFcIiwgXCJSZWQvU3RhZ2UgMi9Nb2RpZmllZCBTdGFnZSAyXCIsIFwiR3JlZW4vU3RhZ2UgM1wiLCBcIk9yYW5nZS9HYXRoZXJpbmcgbGltaXRzXCIpKSkgJT4lIFxuICBmaWx0ZXIoUmVzdHJpY3Rpb25zID09ICdFbmhhbmNlZCBsb2NrZG93bicpICU+JSBcbiAgbXV0YXRlKFdhdmUgPSBjYXNlX3doZW4oRGF0ZV9zdGFydD09YXMuRGF0ZSgnMjAyMC0wMy0xNycpIH4gJ1dhdmUgMScsXG4gICAgICAgICAgICAgICAgICAgICAgICAgIFRSVUUgfiAnV2F2ZSAyJykpICU+JSBcbiAgZmlsdGVyKFdhdmUgPT0gJ1dhdmUgMScgfCBEYXRlX3N0YXJ0ID09IGFzLkRhdGUoJzIwMjAtMTItMjYnKSkgJT4lIFxuICBtdXRhdGUoRGF0ZV9lbmQgPSBjYXNlX3doZW4oV2F2ZSA9PSAnV2F2ZSAxJyB+IERhdGVfZW5kLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgV2F2ZSA9PSAnV2F2ZSAyJyAmIChSZWdpb24gPT0gJ1Rvcm9udG8nIHwgUmVnaW9uID09ICdQZWVsJykgfiBhcy5EYXRlKCcyMDIwLTAzLTE5JyksXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICBXYXZlID09ICdXYXZlIDInICYgUmVnaW9uID09ICdZb3JrJyB+IGFzLkRhdGUoJzIwMjAtMDItMjInKSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFdhdmUgPT0gJ1dhdmUgMicgJiAoUmVnaW9uID09ICdEdXJoYW0nIHwgUmVnaW9uID09ICdIYWx0b24nKSB+IGFzLkRhdGUoJzIwMjAtMDItMTYnKSkpXG5gYGAifQ== -->
+<pre class="r"><code># Lockdown data
+timeline &lt;- read_excel(&#39;data/restrictions.xlsx&#39;) %&gt;% 
+  mutate(Date_start = as.Date(Date_start)) %&gt;% 
+  mutate(Date_end = as.Date(Date_end)) %&gt;% 
+  pivot_longer(cols = Toronto:Halton, names_to = &#39;Region&#39;, values_to = &#39;Restrictions&#39;) %&gt;% 
+  mutate(Restrictions = factor(Restrictions, 
+                               levels = c(&quot;Enhanced lockdown&quot;, &quot;Lockdown/Stage 1&quot;, &quot;Red/Stage 2/Modified Stage 2&quot;, &quot;Green/Stage 3&quot;, &quot;Orange/Gathering limits&quot;))) %&gt;% 
+  filter(Restrictions == &#39;Enhanced lockdown&#39;) %&gt;% 
+  mutate(Wave = case_when(Date_start==as.Date(&#39;2020-03-17&#39;) ~ &#39;Wave 1&#39;,
+                          TRUE ~ &#39;Wave 2&#39;)) %&gt;% 
+  filter(Wave == &#39;Wave 1&#39; | Date_start == as.Date(&#39;2020-12-26&#39;)) %&gt;% 
+  mutate(Date_end = case_when(Wave == &#39;Wave 1&#39; ~ Date_end,
+                              Wave == &#39;Wave 2&#39; &amp; (Region == &#39;Toronto&#39; | Region == &#39;Peel&#39;) ~ as.Date(&#39;2020-03-19&#39;),
+                              Wave == &#39;Wave 2&#39; &amp; Region == &#39;York&#39; ~ as.Date(&#39;2020-02-22&#39;),
+                              Wave == &#39;Wave 2&#39; &amp; (Region == &#39;Durham&#39; | Region == &#39;Halton&#39;) ~ as.Date(&#39;2020-02-16&#39;)))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>York</p>
+</div>
+<div id="join-rt-and-mob-together" class="section level2">
+<h2>Join Rt and Mob together</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYnJlYWtzIDwtIGFzLkRhdGUoYygnMjAyMC0wMy0xNycsICcyMDIwLTA1LTE5JywgJzIwMjAtMTAtMTknLCAnMjAyMC0xMS0xNicsJzIwMjAtMTItMTQnLCAnMjAyMS0wMy0wNycpKVxubGFiZWxzIDwtIGMoXCJMb2NrZG93blwiLCBcIkRlY3JlYXNpbmcgcmVzdHJpY3Rpb25zXCIsIFwiTW9kaWZpZWQgU3RhZ2UgMlwiLCBcIlJlZCAtIENvbnRyb2xcIiwgXCJMb2NrZG93blwiLCBcIkVuZFwiKVxueSA8LSBkYXRhLmZyYW1lKGJyZWFrcywgbGFiZWxzKVxuXG55cl9wbG90IDwtIGdncGxvdCgpICtcbiAgZ2VvbV9saW5lKHlyLCBtYXBwaW5nPWFlcyhkYXRlX3N0YXJ0LCBgTWVhbihSKWApKSArXG4gIGxhYnModGl0bGU9J1lvcmsgRXN0aW1hdGVkIFJ0JykgK1xuICB4bGFiKCdEYXRlJykgK1xuICB5bGFiKCdSdCcpICtcbiAgYW5ub3RhdGUoJ3JlY3QnLCB4bWluPWJyZWFrc1sxXSwgeG1heD1icmVha3NbMl0sXG4gICAgICAgICAgIHltaW49LUluZiwgeW1heD0rSW5mLFxuICAgICAgICAgICBmaWxsPSdyZWQnLCBhbHBoYT0wLjMpICtcbiAgYW5ub3RhdGUoJ3JlY3QnLCB4bWluPWJyZWFrc1syXSwgeG1heD1icmVha3NbM10sXG4gICAgICAgICAgIHltaW49LUluZiwgeW1heD0rSW5mLFxuICAgICAgICAgICBmaWxsPSdncmVlbicsIGFscGhhPTAuMikgK1xuICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzRdLCB4bWF4PWJyZWFrc1s1XSxcbiAgICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsXG4gICAgICAgICAgIGZpbGw9J3JlZCcsIGFscGhhPTAuMSkgK1xuICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzVdLCB4bWF4PWJyZWFrc1s2XSxcbiAgICAgICAgIHltaW49LUluZiwgeW1heD0rSW5mLFxuICAgICAgICAgZmlsbD0ncmVkJywgYWxwaGE9MC4zKSArXG4gIGdlb21fdmxpbmUoeGludGVyY2VwdD1icmVha3NbMTo1XSxcbiAgICAgICAgICAgICBsaW5ldHlwZSA9IFwiZGFzaGVkXCIpICtcbiAgZ2VvbV9sYWJlbF9yZXBlbCh5WzE6NSxdLFxuICAgICAgICAgICAgICAgICAgIG1hcHBpbmc9YWVzKGxhYmVsPWxhYmVscywgeD1icmVha3MsIHk9My41KSxcbiAgICAgICAgICAgICAgICAgICBzaXplPTIuNSlcblxueXJfcGxvdFxuYGBgIn0= -->
-<pre class="r"><code>breaks &lt;- as.Date(c(&#39;2020-03-17&#39;, &#39;2020-05-19&#39;, &#39;2020-10-19&#39;, &#39;2020-11-16&#39;,&#39;2020-12-14&#39;, &#39;2021-03-07&#39;))
-labels &lt;- c(&quot;Lockdown&quot;, &quot;Decreasing restrictions&quot;, &quot;Modified Stage 2&quot;, &quot;Red - Control&quot;, &quot;Lockdown&quot;, &quot;End&quot;)
-y &lt;- data.frame(breaks, labels)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyB3YXZlMVxud2F2ZTFfbGFnMCA8LSBtb2IgJT4lIFxuICBsZWZ0X2pvaW4ocnQsIGJ5ID0gYyhcIlJlZ2lvblwiLCBcIkRhdGVcIikpICU+JSBcbiAgZmlsdGVyKChEYXRlID49IGFzLkRhdGUoJzIwMjAtMDMtMTcnKSAmIERhdGUgPD0gYXMuRGF0ZSgnMjAyMC0wNS0xOScpKSkgJT4lIFxuICBtdXRhdGUoV2F2ZSA9ICdXYXZlIDEnKSAlPiUgXG4gIG11dGF0ZShQZXJpb2QgPSAnTG9ja2Rvd24nKVxuXG53YXZlMV9sYWc3IDwtIG1vYiAlPiUgXG4gIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBSZWdpb24sIHZhbHVlc19mcm9tID0gUmV0YWlsOkdsb2JhbCkgJT4lIFxuICBtdXRhdGUoYWNyb3NzKHdoZXJlKGlzLm51bWVyaWMpLCB+IGRwbHlyOjpsYWcoLiwgNykpKSAlPiUgXG4gIHBpdm90X2xvbmdlcighRGF0ZSwgbmFtZXNfdG89J21vYicpICU+JSBcbiAgc2VwYXJhdGUobW9iLCBjKFwiTW9iaWxpdHlcIiwgXCJSZWdpb25cIikpICU+JSBcbiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IE1vYmlsaXR5LCB2YWx1ZXNfZnJvbSA9IHZhbHVlKSAlPiUgXG4gIGxlZnRfam9pbihydCwgYnkgPSBjKFwiUmVnaW9uXCIsIFwiRGF0ZVwiKSkgJT4lIFxuICBmaWx0ZXIoKERhdGUgPj0gYXMuRGF0ZSgnMjAyMC0wMy0xNycpICYgRGF0ZSA8PSBhcy5EYXRlKCcyMDIwLTA1LTE5JykpKSAlPiUgXG4gIG11dGF0ZShXYXZlID0gJ1dhdmUgMScpICU+JSBcbiAgbXV0YXRlKFBlcmlvZCA9ICc3IGRheXMgYWZ0ZXIgbG9ja2Rvd24nKVxuXG53YXZlMV9sYWcxNCA8LSBtb2IgJT4lIFxuICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gUmVnaW9uLCB2YWx1ZXNfZnJvbSA9IFJldGFpbDpHbG9iYWwpICU+JSBcbiAgbXV0YXRlKGFjcm9zcyh3aGVyZShpcy5udW1lcmljKSwgfiBkcGx5cjo6bGFnKC4sIDE0KSkpICU+JSBcbiAgcGl2b3RfbG9uZ2VyKCFEYXRlLCBuYW1lc190bz0nbW9iJykgJT4lIFxuICBzZXBhcmF0ZShtb2IsIGMoXCJNb2JpbGl0eVwiLCBcIlJlZ2lvblwiKSkgJT4lIFxuICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gTW9iaWxpdHksIHZhbHVlc19mcm9tID0gdmFsdWUpICU+JSBcbiAgbGVmdF9qb2luKHJ0LCBieSA9IGMoXCJSZWdpb25cIiwgXCJEYXRlXCIpKSAlPiUgXG4gIGZpbHRlcigoRGF0ZSA+PSBhcy5EYXRlKCcyMDIwLTAzLTE3JykgJiBEYXRlIDw9IGFzLkRhdGUoJzIwMjAtMDUtMTknKSkpICU+JSBcbiAgbXV0YXRlKFdhdmUgPSAnV2F2ZSAxJykgJT4lIFxuICBtdXRhdGUoUGVyaW9kID0gJzE0IGRheXMgYWZ0ZXIgbG9ja2Rvd24nKVxuXG4jIHdhdmUyXG53YXZlMl9sYWcwIDwtIG1vYiAlPiUgXG4gIGxlZnRfam9pbihydCwgYnkgPSBjKFwiUmVnaW9uXCIsIFwiRGF0ZVwiKSkgJT4lIFxuICBmaWx0ZXIoRGF0ZSA+PSBhcy5EYXRlKCcyMDIwLTEyLTI2JykgJlxuICAgICAgICAgICAgKCAoUmVnaW9uID09ICdUb3JvbnRvJyB8IFJlZ2lvbj09J1BlZWwnKSB8IFxuICAgICAgICAgICAgICAgIChSZWdpb24gPT0nWW9yaycgJiBEYXRlIDw9IGFzLkRhdGUoJzIwMjEtMDItMjInKSkgfFxuICAgICAgICAgICAgICAgIChSZWdpb24gPT0nRHVyaGFtJyAmIERhdGUgPD0gYXMuRGF0ZSgnMjAyMS0wMi0xNicpKSB8XG4gICAgICAgICAgICAgICAgKFJlZ2lvbiA9PSdIYWx0b24nICYgRGF0ZSA8PSBhcy5EYXRlKCcyMDIxLTAyLTE2JykpICkgXG4gICAgICAgICApICU+JSBcbiAgbXV0YXRlKFdhdmUgPSAnV2F2ZSAyJykgJT4lIFxuICBtdXRhdGUoUGVyaW9kID0gJ0xvY2tkb3duJylcblxud2F2ZTJfbGFnNyA8LSBtb2IgJT4lIFxuICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gUmVnaW9uLCB2YWx1ZXNfZnJvbSA9IFJldGFpbDpHbG9iYWwpICU+JSBcbiAgbXV0YXRlKGFjcm9zcyh3aGVyZShpcy5udW1lcmljKSwgfiBkcGx5cjo6bGFnKC4sIDcpKSkgJT4lIFxuICBwaXZvdF9sb25nZXIoIURhdGUsIG5hbWVzX3RvPSdtb2InKSAlPiUgXG4gIHNlcGFyYXRlKG1vYiwgYyhcIk1vYmlsaXR5XCIsIFwiUmVnaW9uXCIpKSAlPiUgXG4gIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBNb2JpbGl0eSwgdmFsdWVzX2Zyb20gPSB2YWx1ZSkgJT4lIFxuICBsZWZ0X2pvaW4ocnQsIGJ5ID0gYyhcIlJlZ2lvblwiLCBcIkRhdGVcIikpICU+JSBcbiAgZmlsdGVyKERhdGUgPj0gYXMuRGF0ZSgnMjAyMC0xMi0yNicpICZcbiAgICAgICAgICAgICggKFJlZ2lvbiA9PSAnVG9yb250bycgfCBSZWdpb249PSdQZWVsJykgfCBcbiAgICAgICAgICAgICAgICAoUmVnaW9uID09J1lvcmsnICYgRGF0ZSA8PSBhcy5EYXRlKCcyMDIxLTAyLTIyJykpIHxcbiAgICAgICAgICAgICAgICAoUmVnaW9uID09J0R1cmhhbScgJiBEYXRlIDw9IGFzLkRhdGUoJzIwMjEtMDItMTYnKSkgfFxuICAgICAgICAgICAgICAgIChSZWdpb24gPT0nSGFsdG9uJyAmIERhdGUgPD0gYXMuRGF0ZSgnMjAyMS0wMi0xNicpKSApIFxuICAgICAgICAgKSAlPiUgXG4gIG11dGF0ZShXYXZlID0gJ1dhdmUgMicpICU+JSBcbiAgbXV0YXRlKFBlcmlvZCA9ICc3IGRheXMgYWZ0ZXIgbG9ja2Rvd24nKVxuXG53YXZlMl9sYWcxNCA8LSBtb2IgJT4lIFxuICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gUmVnaW9uLCB2YWx1ZXNfZnJvbSA9IFJldGFpbDpHbG9iYWwpICU+JSBcbiAgbXV0YXRlKGFjcm9zcyh3aGVyZShpcy5udW1lcmljKSwgfiBkcGx5cjo6bGFnKC4sIDcpKSkgJT4lIFxuICBwaXZvdF9sb25nZXIoIURhdGUsIG5hbWVzX3RvPSdtb2InKSAlPiUgXG4gIHNlcGFyYXRlKG1vYiwgYyhcIk1vYmlsaXR5XCIsIFwiUmVnaW9uXCIpKSAlPiUgXG4gIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBNb2JpbGl0eSwgdmFsdWVzX2Zyb20gPSB2YWx1ZSkgJT4lIFxuICBsZWZ0X2pvaW4ocnQsIGJ5ID0gYyhcIlJlZ2lvblwiLCBcIkRhdGVcIikpICU+JSBcbiAgZmlsdGVyKERhdGUgPj0gYXMuRGF0ZSgnMjAyMC0xMi0yNicpICZcbiAgICAgICAgICAgICggKFJlZ2lvbiA9PSAnVG9yb250bycgfCBSZWdpb249PSdQZWVsJykgfCBcbiAgICAgICAgICAgICAgICAoUmVnaW9uID09J1lvcmsnICYgRGF0ZSA8PSBhcy5EYXRlKCcyMDIxLTAyLTIyJykpIHxcbiAgICAgICAgICAgICAgICAoUmVnaW9uID09J0R1cmhhbScgJiBEYXRlIDw9IGFzLkRhdGUoJzIwMjEtMDItMTYnKSkgfFxuICAgICAgICAgICAgICAgIChSZWdpb24gPT0nSGFsdG9uJyAmIERhdGUgPD0gYXMuRGF0ZSgnMjAyMS0wMi0xNicpKSApIFxuICAgICAgICAgKSAlPiUgXG4gIG11dGF0ZShXYXZlID0gJ1dhdmUgMicpICU+JSBcbiAgbXV0YXRlKFBlcmlvZCA9ICcxNCBkYXlzIGFmdGVyIGxvY2tkb3duJylcbmBgYCJ9 -->
+<pre class="r"><code># wave1
+wave1_lag0 &lt;- mob %&gt;% 
+  left_join(rt, by = c(&quot;Region&quot;, &quot;Date&quot;)) %&gt;% 
+  filter((Date &gt;= as.Date(&#39;2020-03-17&#39;) &amp; Date &lt;= as.Date(&#39;2020-05-19&#39;))) %&gt;% 
+  mutate(Wave = &#39;Wave 1&#39;) %&gt;% 
+  mutate(Period = &#39;Lockdown&#39;)
 
-yr_plot &lt;- ggplot() +
-  geom_line(yr, mapping=aes(date_start, `Mean(R)`)) +
-  labs(title=&#39;York Estimated Rt&#39;) +
-  xlab(&#39;Date&#39;) +
-  ylab(&#39;Rt&#39;) +
-  annotate(&#39;rect&#39;, xmin=breaks[1], xmax=breaks[2],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;red&#39;, alpha=0.3) +
-  annotate(&#39;rect&#39;, xmin=breaks[2], xmax=breaks[3],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;green&#39;, alpha=0.2) +
-  annotate(&#39;rect&#39;, xmin=breaks[4], xmax=breaks[5],
-           ymin=-Inf, ymax=+Inf,
-           fill=&#39;red&#39;, alpha=0.1) +
-  annotate(&#39;rect&#39;, xmin=breaks[5], xmax=breaks[6],
-         ymin=-Inf, ymax=+Inf,
-         fill=&#39;red&#39;, alpha=0.3) +
-  geom_vline(xintercept=breaks[1:5],
-             linetype = &quot;dashed&quot;) +
-  geom_label_repel(y[1:5,],
-                   mapping=aes(label=labels, x=breaks, y=3.5),
-                   size=2.5)
+wave1_lag7 &lt;- mob %&gt;% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %&gt;% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %&gt;% 
+  pivot_longer(!Date, names_to=&#39;mob&#39;) %&gt;% 
+  separate(mob, c(&quot;Mobility&quot;, &quot;Region&quot;)) %&gt;% 
+  pivot_wider(names_from = Mobility, values_from = value) %&gt;% 
+  left_join(rt, by = c(&quot;Region&quot;, &quot;Date&quot;)) %&gt;% 
+  filter((Date &gt;= as.Date(&#39;2020-03-17&#39;) &amp; Date &lt;= as.Date(&#39;2020-05-19&#39;))) %&gt;% 
+  mutate(Wave = &#39;Wave 1&#39;) %&gt;% 
+  mutate(Period = &#39;7 days after lockdown&#39;)
 
-yr_plot</code></pre>
+wave1_lag14 &lt;- mob %&gt;% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %&gt;% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 14))) %&gt;% 
+  pivot_longer(!Date, names_to=&#39;mob&#39;) %&gt;% 
+  separate(mob, c(&quot;Mobility&quot;, &quot;Region&quot;)) %&gt;% 
+  pivot_wider(names_from = Mobility, values_from = value) %&gt;% 
+  left_join(rt, by = c(&quot;Region&quot;, &quot;Date&quot;)) %&gt;% 
+  filter((Date &gt;= as.Date(&#39;2020-03-17&#39;) &amp; Date &lt;= as.Date(&#39;2020-05-19&#39;))) %&gt;% 
+  mutate(Wave = &#39;Wave 1&#39;) %&gt;% 
+  mutate(Period = &#39;14 days after lockdown&#39;)
+
+# wave2
+wave2_lag0 &lt;- mob %&gt;% 
+  left_join(rt, by = c(&quot;Region&quot;, &quot;Date&quot;)) %&gt;% 
+  filter(Date &gt;= as.Date(&#39;2020-12-26&#39;) &amp;
+            ( (Region == &#39;Toronto&#39; | Region==&#39;Peel&#39;) | 
+                (Region ==&#39;York&#39; &amp; Date &lt;= as.Date(&#39;2021-02-22&#39;)) |
+                (Region ==&#39;Durham&#39; &amp; Date &lt;= as.Date(&#39;2021-02-16&#39;)) |
+                (Region ==&#39;Halton&#39; &amp; Date &lt;= as.Date(&#39;2021-02-16&#39;)) ) 
+         ) %&gt;% 
+  mutate(Wave = &#39;Wave 2&#39;) %&gt;% 
+  mutate(Period = &#39;Lockdown&#39;)
+
+wave2_lag7 &lt;- mob %&gt;% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %&gt;% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %&gt;% 
+  pivot_longer(!Date, names_to=&#39;mob&#39;) %&gt;% 
+  separate(mob, c(&quot;Mobility&quot;, &quot;Region&quot;)) %&gt;% 
+  pivot_wider(names_from = Mobility, values_from = value) %&gt;% 
+  left_join(rt, by = c(&quot;Region&quot;, &quot;Date&quot;)) %&gt;% 
+  filter(Date &gt;= as.Date(&#39;2020-12-26&#39;) &amp;
+            ( (Region == &#39;Toronto&#39; | Region==&#39;Peel&#39;) | 
+                (Region ==&#39;York&#39; &amp; Date &lt;= as.Date(&#39;2021-02-22&#39;)) |
+                (Region ==&#39;Durham&#39; &amp; Date &lt;= as.Date(&#39;2021-02-16&#39;)) |
+                (Region ==&#39;Halton&#39; &amp; Date &lt;= as.Date(&#39;2021-02-16&#39;)) ) 
+         ) %&gt;% 
+  mutate(Wave = &#39;Wave 2&#39;) %&gt;% 
+  mutate(Period = &#39;7 days after lockdown&#39;)
+
+wave2_lag14 &lt;- mob %&gt;% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %&gt;% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %&gt;% 
+  pivot_longer(!Date, names_to=&#39;mob&#39;) %&gt;% 
+  separate(mob, c(&quot;Mobility&quot;, &quot;Region&quot;)) %&gt;% 
+  pivot_wider(names_from = Mobility, values_from = value) %&gt;% 
+  left_join(rt, by = c(&quot;Region&quot;, &quot;Date&quot;)) %&gt;% 
+  filter(Date &gt;= as.Date(&#39;2020-12-26&#39;) &amp;
+            ( (Region == &#39;Toronto&#39; | Region==&#39;Peel&#39;) | 
+                (Region ==&#39;York&#39; &amp; Date &lt;= as.Date(&#39;2021-02-22&#39;)) |
+                (Region ==&#39;Durham&#39; &amp; Date &lt;= as.Date(&#39;2021-02-16&#39;)) |
+                (Region ==&#39;Halton&#39; &amp; Date &lt;= as.Date(&#39;2021-02-16&#39;)) ) 
+         ) %&gt;% 
+  mutate(Wave = &#39;Wave 2&#39;) %&gt;% 
+  mutate(Period = &#39;14 days after lockdown&#39;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Durham</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdCA8LSBwbG0oUnQgfiBHbG9iYWwsIFxuICAgICAgICAgICAgZGF0YSA9IHdhdmUxX2xhZzE0LFxuICAgICAgICAgICAgaW5kZXggPSBjKFwiUmVnaW9uXCIsIFwiRGF0ZVwiKSwgXG4gICAgICAgICAgICBtb2RlbCA9IFwid2l0aGluXCIpXG5zdW1tYXJ5KHRlc3QpXG5gYGAifQ== -->
+<pre class="r"><code>test &lt;- plm(Rt ~ Global, 
+            data = wave1_lag14,
+            index = c(&quot;Region&quot;, &quot;Date&quot;), 
+            model = &quot;within&quot;)
+summary(test)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiT25ld2F5IChpbmRpdmlkdWFsKSBlZmZlY3QgV2l0aGluIE1vZGVsXG5cbkNhbGw6XG5wbG0oZm9ybXVsYSA9IFJ0IH4gR2xvYmFsLCBkYXRhID0gd2F2ZTFfbGFnMTQsIG1vZGVsID0gXCJ3aXRoaW5cIiwgXG4gICAgaW5kZXggPSBjKFwiUmVnaW9uXCIsIFwiRGF0ZVwiKSlcblxuQmFsYW5jZWQgUGFuZWw6IG4gPSA1LCBUID0gNjQsIE4gPSAzMjBcblxuUmVzaWR1YWxzOlxuICAgICBNaW4uICAgMXN0IFF1LiAgICBNZWRpYW4gICAzcmQgUXUuICAgICAgTWF4LiBcbi0wLjU2MDgzMSAtMC4xOTc0MTggLTAuMDQ5MTI5ICAwLjE0NjU1MiAgMS4wODUwMjMgXG5cbkNvZWZmaWNpZW50czpcbiAgICAgICAgIEVzdGltYXRlIFN0ZC4gRXJyb3IgdC12YWx1ZSAgUHIoPnx0fCkgICAgXG5HbG9iYWwgMC4wMjAzODM5MyAwLjAwMDk3Mzg3ICAyMC45MzEgPCAyLjJlLTE2ICoqKlxuLS0tXG5TaWduaWYuIGNvZGVzOiAgMCDigJgqKirigJkgMC4wMDEg4oCYKirigJkgMC4wMSDigJgq4oCZIDAuMDUg4oCYLuKAmSAwLjEg4oCYIOKAmSAxXG5cblRvdGFsIFN1bSBvZiBTcXVhcmVzOiAgICA2NS4zMDdcblJlc2lkdWFsIFN1bSBvZiBTcXVhcmVzOiAyNy4yNjZcblItU3F1YXJlZDogICAgICAwLjU4MjVcbkFkai4gUi1TcXVhcmVkOiAwLjU3NTg1XG5GLXN0YXRpc3RpYzogNDM4LjA5OSBvbiAxIGFuZCAzMTQgREYsIHAtdmFsdWU6IDwgMi4yMmUtMTZcbiJ9 -->
+<pre><code>Oneway (individual) effect Within Model
+
+Call:
+plm(formula = Rt ~ Global, data = wave1_lag14, model = &quot;within&quot;, 
+    index = c(&quot;Region&quot;, &quot;Date&quot;))
+
+Balanced Panel: n = 5, T = 64, N = 320
+
+Residuals:
+     Min.   1st Qu.    Median   3rd Qu.      Max. 
+-0.560831 -0.197418 -0.049129  0.146552  1.085023 
+
+Coefficients:
+         Estimate Std. Error t-value  Pr(&gt;|t|)    
+Global 0.02038393 0.00097387  20.931 &lt; 2.2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Total Sum of Squares:    65.307
+Residual Sum of Squares: 27.266
+R-Squared:      0.5825
+Adj. R-Squared: 0.57585
+F-statistic: 438.099 on 1 and 314 DF, p-value: &lt; 2.22e-16</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZml4ZWYodGVzdClcbmBgYCJ9 -->
+<pre class="r"><code>fixef(test)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIER1cmhhbSAgSGFsdG9uICAgIFBlZWwgVG9yb250byAgICBZb3JrIFxuIDEuNjE4OSAgMS42NjQxICAxLjg1MzkgIDEuNzczNyAgMS41NjA3IFxuIn0= -->
+<pre><code> Durham  Halton    Peel Toronto    York 
+ 1.6189  1.6641  1.8539  1.7737  1.5607 </code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Halton</p>
 <!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-chunk-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUmVncmVzc2lvbiBhbmQgQ29ycmVsYXRpb24gQW5hbHlzaXMiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCiMjIE1ha2UgZ3JhcGhzClRvcm9udG8KYGBge3J9CmJyZWFrcyA8LSBhcy5EYXRlKGMoJzIwMjAtMDMtMTcnLCAnMjAyMC0wNi0yNCcsICcyMDIwLTA5LTI4JywgJzIwMjAtMTEtMjAnLCcyMDIwLTEyLTE0JywgJzIwMjEtMDMtMDcnKSkKbGFiZWxzIDwtIGMoIkxvY2tkb3duIiwgIkRlY3JlYXNpbmcgcmVzdHJpY3Rpb25zIiwgIlNlY29uZCBXYXZlIEFubm91bmNlbWVudCIsICJSZWQgLSBDb250cm9sIiwgIkxvY2tkb3duIiwgIkVuZCIpCnQgPC0gZGF0YS5mcmFtZShicmVha3MsIGxhYmVscykKCnRyX3Bsb3QgPC0gZ2dwbG90KCkgKwogIGdlb21fbGluZSh0ciwgbWFwcGluZz1hZXMoZGF0ZV9zdGFydCwgYE1lYW4oUilgKSkgKwogIGxhYnModGl0bGU9J1Rvcm9udG8gRXN0aW1hdGVkIFJ0JykgKwogIHhsYWIoJ0RhdGUnKSArCiAgeWxhYignUnQnKSArCiAgYW5ub3RhdGUoJ3JlY3QnLCB4bWluPWJyZWFrc1sxXSwgeG1heD1icmVha3NbMl0sCiAgICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsCiAgICAgICAgICAgZmlsbD0ncmVkJywgYWxwaGE9MC4zKSArCiAgYW5ub3RhdGUoJ3JlY3QnLCB4bWluPWJyZWFrc1syXSwgeG1heD1icmVha3NbM10sCiAgICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsCiAgICAgICAgICAgZmlsbD0nZ3JlZW4nLCBhbHBoYT0wLjIpICsKICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzRdLCB4bWF4PWJyZWFrc1s1XSwKICAgICAgICAgICB5bWluPS1JbmYsIHltYXg9K0luZiwKICAgICAgICAgICBmaWxsPSdyZWQnLCBhbHBoYT0wLjEpICsKICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzVdLCB4bWF4PWJyZWFrc1s2XSwKICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsCiAgICAgICAgIGZpbGw9J3JlZCcsIGFscGhhPTAuMykgKwogIGdlb21fdmxpbmUoeGludGVyY2VwdD1icmVha3NbMTo1XSwKICAgICAgICAgICAgIGxpbmV0eXBlID0gImRhc2hlZCIpICsKICBnZW9tX2xhYmVsX3JlcGVsKHRbMTo1LF0sCiAgICAgICAgICAgICAgICAgICBtYXBwaW5nPWFlcyhsYWJlbD1sYWJlbHMsIHg9YnJlYWtzLCB5PTMuNSksCiAgICAgICAgICAgICAgICAgICBzaXplPTIuNSkKCnRyX3Bsb3QKYGBgCgpQZWVsCmBgYHtyfQpicmVha3MgPC0gYXMuRGF0ZShjKCcyMDIwLTAzLTE3JywgJzIwMjAtMDYtMjInLCAnMjAyMC0xMC0xMScsICcyMDIwLTExLTA5JywgJzIwMjAtMTItMTQnLCAnMjAyMS0wMy0wNycpKQpsYWJlbHMgPC0gYygnTG9ja2Rvd24nLCAnRGVjcmVhc2luZyBSZXN0cmljdGlvbnMnLCAnTW9kaWZpZWQgU3RhZ2UgMicsICdSZWQgLSBDb250cm9sJywgJ0xvY2tkb3duJywgIkVuZCIpCnAgPC0gZGF0YS5mcmFtZShicmVha3MsIGxhYmVscykKCnByX3Bsb3QgPC0gZ2dwbG90KCkgKwogIGdlb21fbGluZShwciwgbWFwcGluZz1hZXMoZGF0ZV9zdGFydCwgYE1lYW4oUilgKSkgKwogIGxhYnModGl0bGU9J1BlZWwgRXN0aW1hdGVkIFJ0JykgKwogIHhsYWIoJ0RhdGUnKSArCiAgeWxhYignUnQnKSArCiAgYW5ub3RhdGUoJ3JlY3QnLCB4bWluPWJyZWFrc1sxXSwgeG1heD1icmVha3NbMl0sCiAgICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsCiAgICAgICAgICAgZmlsbD0ncmVkJywgYWxwaGE9MC4zKSArCiAgYW5ub3RhdGUoJ3JlY3QnLCB4bWluPWJyZWFrc1syXSwgeG1heD1icmVha3NbM10sCiAgICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsCiAgICAgICAgICAgZmlsbD0nZ3JlZW4nLCBhbHBoYT0wLjIpICsKICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzRdLCB4bWF4PWJyZWFrc1s1XSwKICAgICAgICAgICB5bWluPS1JbmYsIHltYXg9K0luZiwKICAgICAgICAgICBmaWxsPSdyZWQnLCBhbHBoYT0wLjEpICsKICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzVdLCB4bWF4PWJyZWFrc1s2XSwKICAgICAgICAgeW1pbj0tSW5mLCB5bWF4PStJbmYsCiAgICAgICAgIGZpbGw9J3JlZCcsIGFscGhhPTAuMykgKwogIGdlb21fdmxpbmUoeGludGVyY2VwdD1icmVha3NbMTo1XSwKICAgICAgICAgICAgIGxpbmV0eXBlID0gImRhc2hlZCIpICsKICBnZW9tX2xhYmVsX3JlcGVsKHBbMTo1LF0sCiAgICAgICAgICAgICAgICAgICBtYXBwaW5nPWFlcyhsYWJlbD1sYWJlbHMsIHg9YnJlYWtzLCB5PTMuNSksCiAgICAgICAgICAgICAgICAgICBzaXplPTIuNSkKCnByX3Bsb3QKYGBgCgpZb3JrCmBgYHtyfQpicmVha3MgPC0gYXMuRGF0ZShjKCcyMDIwLTAzLTE3JywgJzIwMjAtMDUtMTknLCAnMjAyMC0xMC0xOScsICcyMDIwLTExLTE2JywnMjAyMC0xMi0xNCcsICcyMDIxLTAzLTA3JykpCmxhYmVscyA8LSBjKCJMb2NrZG93biIsICJEZWNyZWFzaW5nIHJlc3RyaWN0aW9ucyIsICJNb2RpZmllZCBTdGFnZSAyIiwgIlJlZCAtIENvbnRyb2wiLCAiTG9ja2Rvd24iLCAiRW5kIikKeSA8LSBkYXRhLmZyYW1lKGJyZWFrcywgbGFiZWxzKQoKeXJfcGxvdCA8LSBnZ3Bsb3QoKSArCiAgZ2VvbV9saW5lKHlyLCBtYXBwaW5nPWFlcyhkYXRlX3N0YXJ0LCBgTWVhbihSKWApKSArCiAgbGFicyh0aXRsZT0nWW9yayBFc3RpbWF0ZWQgUnQnKSArCiAgeGxhYignRGF0ZScpICsKICB5bGFiKCdSdCcpICsKICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzFdLCB4bWF4PWJyZWFrc1syXSwKICAgICAgICAgICB5bWluPS1JbmYsIHltYXg9K0luZiwKICAgICAgICAgICBmaWxsPSdyZWQnLCBhbHBoYT0wLjMpICsKICBhbm5vdGF0ZSgncmVjdCcsIHhtaW49YnJlYWtzWzJdLCB4bWF4PWJyZWFrc1szXSwKICAgICAgICAgICB5bWluPS1JbmYsIHltYXg9K0luZiwKICAgICAgICAgICBmaWxsPSdncmVlbicsIGFscGhhPTAuMikgKwogIGFubm90YXRlKCdyZWN0JywgeG1pbj1icmVha3NbNF0sIHhtYXg9YnJlYWtzWzVdLAogICAgICAgICAgIHltaW49LUluZiwgeW1heD0rSW5mLAogICAgICAgICAgIGZpbGw9J3JlZCcsIGFscGhhPTAuMSkgKwogIGFubm90YXRlKCdyZWN0JywgeG1pbj1icmVha3NbNV0sIHhtYXg9YnJlYWtzWzZdLAogICAgICAgICB5bWluPS1JbmYsIHltYXg9K0luZiwKICAgICAgICAgZmlsbD0ncmVkJywgYWxwaGE9MC4zKSArCiAgZ2VvbV92bGluZSh4aW50ZXJjZXB0PWJyZWFrc1sxOjVdLAogICAgICAgICAgICAgbGluZXR5cGUgPSAiZGFzaGVkIikgKwogIGdlb21fbGFiZWxfcmVwZWwoeVsxOjUsXSwKICAgICAgICAgICAgICAgICAgIG1hcHBpbmc9YWVzKGxhYmVsPWxhYmVscywgeD1icmVha3MsIHk9My41KSwKICAgICAgICAgICAgICAgICAgIHNpemU9Mi41KQoKeXJfcGxvdApgYGAKCkR1cmhhbQpgYGB7cn0KCmBgYAoKSGFsdG9uCmBgYHtyfQoKYGBgCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUmVncmVzc2lvbiBhbmQgQ29ycmVsYXRpb24gQW5hbHlzaXMiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCiMjIExvYWQgcGFja2FnZXMKYGBge3J9CmxpYnJhcnkodGlkeXZlcnNlKQpsaWJyYXJ5KHJlYWR4bCkKbGlicmFyeShwbG0pCmBgYAoKIyMgTG9hZCBSdCBhbmQgTW9iaWxpdHkgZGF0YQpgYGB7ciwgd2FybmluZz1GLCBtZXNzYWdlPUZ9CiMgUnQgZGF0YQpydCA8LSByZWFkX2NzdignZXN0Ui9lc3RSLmNzdicpICU+JSAKICBzZWxlY3QoYE1lYW4oUilgLCBkYXRlX3N0YXJ0LCBSZWdpb24pICU+JSAKICByZW5hbWUoUnQ9YE1lYW4oUilgLCBEYXRlPWRhdGVfc3RhcnQpCgojIE1vYmlsaXR5IGRhdGEKcmVnaW9ucyA9IGMoJ1JlZ2lvbmFsIE11bmljaXBhbGl0eSBvZiBEdXJoYW0nLCAnUmVnaW9uYWwgTXVuaWNpcGFsaXR5IG9mIEhhbHRvbicsICdSZWdpb25hbCBNdW5pY2lwYWxpdHkgb2YgUGVlbCcsICdUb3JvbnRvIERpdmlzaW9uJywgJ1JlZ2lvbmFsIE11bmljaXBhbGl0eSBvZiBZb3JrJykKbW9iIDwtIHJlYWRfY3N2KCdkYXRhLzIwMjBfQ0FfUmVnaW9uX01vYmlsaXR5X1JlcG9ydC5jc3YnKSAlPiUgCiAgcmVuYW1lKFJldGFpbD1yZXRhaWxfYW5kX3JlY3JlYXRpb25fcGVyY2VudF9jaGFuZ2VfZnJvbV9iYXNlbGluZSwKICAgICAgICAgR3JvY2VyeT1ncm9jZXJ5X2FuZF9waGFybWFjeV9wZXJjZW50X2NoYW5nZV9mcm9tX2Jhc2VsaW5lLAogICAgICAgICBQYXJrcz1wYXJrc19wZXJjZW50X2NoYW5nZV9mcm9tX2Jhc2VsaW5lLAogICAgICAgICBUcmFuc2l0PXRyYW5zaXRfc3RhdGlvbnNfcGVyY2VudF9jaGFuZ2VfZnJvbV9iYXNlbGluZSwKICAgICAgICAgV29ya3BsYWNlcz13b3JrcGxhY2VzX3BlcmNlbnRfY2hhbmdlX2Zyb21fYmFzZWxpbmUsCiAgICAgICAgIFJlc2lkZW50aWFsPXJlc2lkZW50aWFsX3BlcmNlbnRfY2hhbmdlX2Zyb21fYmFzZWxpbmUpICU+JSAKICBzZWxlY3Qoc3ViX3JlZ2lvbl8yLCBkYXRlLCAKICAgICAgICAgUmV0YWlsLCBHcm9jZXJ5LCBQYXJrcywgVHJhbnNpdCwgV29ya3BsYWNlcywgUmVzaWRlbnRpYWwpICU+JSAKICBmaWx0ZXIoc3ViX3JlZ2lvbl8yICVpbiUgcmVnaW9ucykgJT4lIAogIG11dGF0ZShHbG9iYWwgPSAoUmV0YWlsICsgR3JvY2VyeSArIFBhcmtzICsgVHJhbnNpdCArIFdvcmtwbGFjZXMgKyBSZXNpZGVudGlhbCkvNiklPiUKICByZW5hbWUoUmVnaW9uPXN1Yl9yZWdpb25fMiwgRGF0ZT1kYXRlKSAlPiUgCiAgbXV0YXRlKFJlZ2lvbiA9IGNhc2Vfd2hlbihSZWdpb24gPT0gJ1JlZ2lvbmFsIE11bmljaXBhbGl0eSBvZiBEdXJoYW0nIH4gJ0R1cmhhbScsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBSZWdpb24gPT0gJ1JlZ2lvbmFsIE11bmljaXBhbGl0eSBvZiBIYWx0b24nIH4gJ0hhbHRvbicsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBSZWdpb24gPT0gJ1JlZ2lvbmFsIE11bmljaXBhbGl0eSBvZiBQZWVsJyB+ICdQZWVsJywKICAgICAgICAgICAgICAgICAgICAgICAgICAgIFJlZ2lvbiA9PSAnVG9yb250byBEaXZpc2lvbicgfiAnVG9yb250bycsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBSZWdpb24gPT0gJ1JlZ2lvbmFsIE11bmljaXBhbGl0eSBvZiBZb3JrJyB+ICdZb3JrJykpCmBgYAoKIyMgTG9hZCByZXN0cmljdGlvbiBkYXRhCmBgYHtyLCB3YXJuaW5nPUYsIG1lc3NhZ2U9Rn0KIyBMb2NrZG93biBkYXRhCnRpbWVsaW5lIDwtIHJlYWRfZXhjZWwoJ2RhdGEvcmVzdHJpY3Rpb25zLnhsc3gnKSAlPiUgCiAgbXV0YXRlKERhdGVfc3RhcnQgPSBhcy5EYXRlKERhdGVfc3RhcnQpKSAlPiUgCiAgbXV0YXRlKERhdGVfZW5kID0gYXMuRGF0ZShEYXRlX2VuZCkpICU+JSAKICBwaXZvdF9sb25nZXIoY29scyA9IFRvcm9udG86SGFsdG9uLCBuYW1lc190byA9ICdSZWdpb24nLCB2YWx1ZXNfdG8gPSAnUmVzdHJpY3Rpb25zJykgJT4lIAogIG11dGF0ZShSZXN0cmljdGlvbnMgPSBmYWN0b3IoUmVzdHJpY3Rpb25zLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGxldmVscyA9IGMoIkVuaGFuY2VkIGxvY2tkb3duIiwgIkxvY2tkb3duL1N0YWdlIDEiLCAiUmVkL1N0YWdlIDIvTW9kaWZpZWQgU3RhZ2UgMiIsICJHcmVlbi9TdGFnZSAzIiwgIk9yYW5nZS9HYXRoZXJpbmcgbGltaXRzIikpKSAlPiUgCiAgZmlsdGVyKFJlc3RyaWN0aW9ucyA9PSAnRW5oYW5jZWQgbG9ja2Rvd24nKSAlPiUgCiAgbXV0YXRlKFdhdmUgPSBjYXNlX3doZW4oRGF0ZV9zdGFydD09YXMuRGF0ZSgnMjAyMC0wMy0xNycpIH4gJ1dhdmUgMScsCiAgICAgICAgICAgICAgICAgICAgICAgICAgVFJVRSB+ICdXYXZlIDInKSkgJT4lIAogIGZpbHRlcihXYXZlID09ICdXYXZlIDEnIHwgRGF0ZV9zdGFydCA9PSBhcy5EYXRlKCcyMDIwLTEyLTI2JykpICU+JSAKICBtdXRhdGUoRGF0ZV9lbmQgPSBjYXNlX3doZW4oV2F2ZSA9PSAnV2F2ZSAxJyB+IERhdGVfZW5kLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICBXYXZlID09ICdXYXZlIDInICYgKFJlZ2lvbiA9PSAnVG9yb250bycgfCBSZWdpb24gPT0gJ1BlZWwnKSB+IGFzLkRhdGUoJzIwMjAtMDMtMTknKSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgV2F2ZSA9PSAnV2F2ZSAyJyAmIFJlZ2lvbiA9PSAnWW9yaycgfiBhcy5EYXRlKCcyMDIwLTAyLTIyJyksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFdhdmUgPT0gJ1dhdmUgMicgJiAoUmVnaW9uID09ICdEdXJoYW0nIHwgUmVnaW9uID09ICdIYWx0b24nKSB+IGFzLkRhdGUoJzIwMjAtMDItMTYnKSkpCmBgYAoKIyMgSm9pbiBSdCBhbmQgTW9iIHRvZ2V0aGVyCmBgYHtyfQojIHdhdmUxCndhdmUxX2xhZzAgPC0gbW9iICU+JSAKICBsZWZ0X2pvaW4ocnQsIGJ5ID0gYygiUmVnaW9uIiwgIkRhdGUiKSkgJT4lIAogIGZpbHRlcigoRGF0ZSA+PSBhcy5EYXRlKCcyMDIwLTAzLTE3JykgJiBEYXRlIDw9IGFzLkRhdGUoJzIwMjAtMDUtMTknKSkpICU+JSAKICBtdXRhdGUoV2F2ZSA9ICdXYXZlIDEnKSAlPiUgCiAgbXV0YXRlKFBlcmlvZCA9ICdMb2NrZG93bicpCgp3YXZlMV9sYWc3IDwtIG1vYiAlPiUgCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IFJlZ2lvbiwgdmFsdWVzX2Zyb20gPSBSZXRhaWw6R2xvYmFsKSAlPiUgCiAgbXV0YXRlKGFjcm9zcyh3aGVyZShpcy5udW1lcmljKSwgfiBkcGx5cjo6bGFnKC4sIDcpKSkgJT4lIAogIHBpdm90X2xvbmdlcighRGF0ZSwgbmFtZXNfdG89J21vYicpICU+JSAKICBzZXBhcmF0ZShtb2IsIGMoIk1vYmlsaXR5IiwgIlJlZ2lvbiIpKSAlPiUgCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IE1vYmlsaXR5LCB2YWx1ZXNfZnJvbSA9IHZhbHVlKSAlPiUgCiAgbGVmdF9qb2luKHJ0LCBieSA9IGMoIlJlZ2lvbiIsICJEYXRlIikpICU+JSAKICBmaWx0ZXIoKERhdGUgPj0gYXMuRGF0ZSgnMjAyMC0wMy0xNycpICYgRGF0ZSA8PSBhcy5EYXRlKCcyMDIwLTA1LTE5JykpKSAlPiUgCiAgbXV0YXRlKFdhdmUgPSAnV2F2ZSAxJykgJT4lIAogIG11dGF0ZShQZXJpb2QgPSAnNyBkYXlzIGFmdGVyIGxvY2tkb3duJykKCndhdmUxX2xhZzE0IDwtIG1vYiAlPiUgCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IFJlZ2lvbiwgdmFsdWVzX2Zyb20gPSBSZXRhaWw6R2xvYmFsKSAlPiUgCiAgbXV0YXRlKGFjcm9zcyh3aGVyZShpcy5udW1lcmljKSwgfiBkcGx5cjo6bGFnKC4sIDE0KSkpICU+JSAKICBwaXZvdF9sb25nZXIoIURhdGUsIG5hbWVzX3RvPSdtb2InKSAlPiUgCiAgc2VwYXJhdGUobW9iLCBjKCJNb2JpbGl0eSIsICJSZWdpb24iKSkgJT4lIAogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBNb2JpbGl0eSwgdmFsdWVzX2Zyb20gPSB2YWx1ZSkgJT4lIAogIGxlZnRfam9pbihydCwgYnkgPSBjKCJSZWdpb24iLCAiRGF0ZSIpKSAlPiUgCiAgZmlsdGVyKChEYXRlID49IGFzLkRhdGUoJzIwMjAtMDMtMTcnKSAmIERhdGUgPD0gYXMuRGF0ZSgnMjAyMC0wNS0xOScpKSkgJT4lIAogIG11dGF0ZShXYXZlID0gJ1dhdmUgMScpICU+JSAKICBtdXRhdGUoUGVyaW9kID0gJzE0IGRheXMgYWZ0ZXIgbG9ja2Rvd24nKQoKIyB3YXZlMgp3YXZlMl9sYWcwIDwtIG1vYiAlPiUgCiAgbGVmdF9qb2luKHJ0LCBieSA9IGMoIlJlZ2lvbiIsICJEYXRlIikpICU+JSAKICBmaWx0ZXIoRGF0ZSA+PSBhcy5EYXRlKCcyMDIwLTEyLTI2JykgJgogICAgICAgICAgICAoIChSZWdpb24gPT0gJ1Rvcm9udG8nIHwgUmVnaW9uPT0nUGVlbCcpIHwgCiAgICAgICAgICAgICAgICAoUmVnaW9uID09J1lvcmsnICYgRGF0ZSA8PSBhcy5EYXRlKCcyMDIxLTAyLTIyJykpIHwKICAgICAgICAgICAgICAgIChSZWdpb24gPT0nRHVyaGFtJyAmIERhdGUgPD0gYXMuRGF0ZSgnMjAyMS0wMi0xNicpKSB8CiAgICAgICAgICAgICAgICAoUmVnaW9uID09J0hhbHRvbicgJiBEYXRlIDw9IGFzLkRhdGUoJzIwMjEtMDItMTYnKSkgKSAKICAgICAgICAgKSAlPiUgCiAgbXV0YXRlKFdhdmUgPSAnV2F2ZSAyJykgJT4lIAogIG11dGF0ZShQZXJpb2QgPSAnTG9ja2Rvd24nKQoKd2F2ZTJfbGFnNyA8LSBtb2IgJT4lIAogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBSZWdpb24sIHZhbHVlc19mcm9tID0gUmV0YWlsOkdsb2JhbCkgJT4lIAogIG11dGF0ZShhY3Jvc3Mod2hlcmUoaXMubnVtZXJpYyksIH4gZHBseXI6OmxhZyguLCA3KSkpICU+JSAKICBwaXZvdF9sb25nZXIoIURhdGUsIG5hbWVzX3RvPSdtb2InKSAlPiUgCiAgc2VwYXJhdGUobW9iLCBjKCJNb2JpbGl0eSIsICJSZWdpb24iKSkgJT4lIAogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBNb2JpbGl0eSwgdmFsdWVzX2Zyb20gPSB2YWx1ZSkgJT4lIAogIGxlZnRfam9pbihydCwgYnkgPSBjKCJSZWdpb24iLCAiRGF0ZSIpKSAlPiUgCiAgZmlsdGVyKERhdGUgPj0gYXMuRGF0ZSgnMjAyMC0xMi0yNicpICYKICAgICAgICAgICAgKCAoUmVnaW9uID09ICdUb3JvbnRvJyB8IFJlZ2lvbj09J1BlZWwnKSB8IAogICAgICAgICAgICAgICAgKFJlZ2lvbiA9PSdZb3JrJyAmIERhdGUgPD0gYXMuRGF0ZSgnMjAyMS0wMi0yMicpKSB8CiAgICAgICAgICAgICAgICAoUmVnaW9uID09J0R1cmhhbScgJiBEYXRlIDw9IGFzLkRhdGUoJzIwMjEtMDItMTYnKSkgfAogICAgICAgICAgICAgICAgKFJlZ2lvbiA9PSdIYWx0b24nICYgRGF0ZSA8PSBhcy5EYXRlKCcyMDIxLTAyLTE2JykpICkgCiAgICAgICAgICkgJT4lIAogIG11dGF0ZShXYXZlID0gJ1dhdmUgMicpICU+JSAKICBtdXRhdGUoUGVyaW9kID0gJzcgZGF5cyBhZnRlciBsb2NrZG93bicpCgp3YXZlMl9sYWcxNCA8LSBtb2IgJT4lIAogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBSZWdpb24sIHZhbHVlc19mcm9tID0gUmV0YWlsOkdsb2JhbCkgJT4lIAogIG11dGF0ZShhY3Jvc3Mod2hlcmUoaXMubnVtZXJpYyksIH4gZHBseXI6OmxhZyguLCA3KSkpICU+JSAKICBwaXZvdF9sb25nZXIoIURhdGUsIG5hbWVzX3RvPSdtb2InKSAlPiUgCiAgc2VwYXJhdGUobW9iLCBjKCJNb2JpbGl0eSIsICJSZWdpb24iKSkgJT4lIAogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBNb2JpbGl0eSwgdmFsdWVzX2Zyb20gPSB2YWx1ZSkgJT4lIAogIGxlZnRfam9pbihydCwgYnkgPSBjKCJSZWdpb24iLCAiRGF0ZSIpKSAlPiUgCiAgZmlsdGVyKERhdGUgPj0gYXMuRGF0ZSgnMjAyMC0xMi0yNicpICYKICAgICAgICAgICAgKCAoUmVnaW9uID09ICdUb3JvbnRvJyB8IFJlZ2lvbj09J1BlZWwnKSB8IAogICAgICAgICAgICAgICAgKFJlZ2lvbiA9PSdZb3JrJyAmIERhdGUgPD0gYXMuRGF0ZSgnMjAyMS0wMi0yMicpKSB8CiAgICAgICAgICAgICAgICAoUmVnaW9uID09J0R1cmhhbScgJiBEYXRlIDw9IGFzLkRhdGUoJzIwMjEtMDItMTYnKSkgfAogICAgICAgICAgICAgICAgKFJlZ2lvbiA9PSdIYWx0b24nICYgRGF0ZSA8PSBhcy5EYXRlKCcyMDIxLTAyLTE2JykpICkgCiAgICAgICAgICkgJT4lIAogIG11dGF0ZShXYXZlID0gJ1dhdmUgMicpICU+JSAKICBtdXRhdGUoUGVyaW9kID0gJzE0IGRheXMgYWZ0ZXIgbG9ja2Rvd24nKQpgYGAKCmBgYHtyfQp0ZXN0IDwtIHBsbShSdCB+IEdsb2JhbCwgCiAgICAgICAgICAgIGRhdGEgPSB3YXZlMV9sYWcxNCwKICAgICAgICAgICAgaW5kZXggPSBjKCJSZWdpb24iLCAiRGF0ZSIpLCAKICAgICAgICAgICAgbW9kZWwgPSAid2l0aGluIikKc3VtbWFyeSh0ZXN0KQpmaXhlZih0ZXN0KQpgYGAKCg==</div>
 
 
 
