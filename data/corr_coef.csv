@@ -1,0 +1,211 @@
+place,mobility,coefficient,p_val,period,wave,Significant (p<0.01)
+durham,Retail,0.04154694025476374,0.7444504890403458,Lockdown,Wave 1,No
+durham,Grocery,0.14461679627935453,0.2542289135504737,Lockdown,Wave 1,No
+durham,Parks,0.12833920052009137,0.3121768095906363,Lockdown,Wave 1,No
+durham,Transit,0.016279826950885628,0.8984021109301534,Lockdown,Wave 1,No
+durham,Workplaces,0.12605990887602206,0.3209197488096834,Lockdown,Wave 1,No
+durham,Residential,-0.1127614380014794,0.3750002770274735,Lockdown,Wave 1,No
+durham,Global,0.13036486982536297,0.3045364970751338,Lockdown,Wave 1,No
+peel,Retail,0.2511782187322631,0.0452800781455674,Lockdown,Wave 1,No
+peel,Grocery,0.23582140240094351,0.060663426354669085,Lockdown,Wave 1,No
+peel,Parks,0.13522285172126614,0.28671112225988227,Lockdown,Wave 1,No
+peel,Transit,0.6957412018633395,1.7590038212397528e-10,Lockdown,Wave 1,Yes
+peel,Workplaces,0.29540618659519186,0.017796547552530653,Lockdown,Wave 1,No
+peel,Residential,-0.20919183748176207,0.09712352118010222,Lockdown,Wave 1,No
+peel,Global,0.340163249569333,0.005955823716471486,Lockdown,Wave 1,Yes
+toronto,Retail,0.2868765194718793,0.021543662223826383,Lockdown,Wave 1,No
+toronto,Grocery,0.24597458752386342,0.05008601668669496,Lockdown,Wave 1,No
+toronto,Parks,0.013453413176884166,0.9159705051143505,Lockdown,Wave 1,No
+toronto,Transit,0.23185639640964148,0.0652557010126708,Lockdown,Wave 1,No
+toronto,Workplaces,0.1417346226230082,0.26391725964632173,Lockdown,Wave 1,No
+toronto,Residential,-0.12431312643538214,0.32772466801745903,Lockdown,Wave 1,No
+toronto,Global,0.16432015718197898,0.19446190703260052,Lockdown,Wave 1,No
+halton,Retail,0.08554709779181839,0.5015060400448011,Lockdown,Wave 1,No
+halton,Grocery,0.06694068732253848,0.5991933726214462,Lockdown,Wave 1,No
+halton,Parks,0.19566178248055552,0.12127069869184555,Lockdown,Wave 1,No
+halton,Transit,0.008723768571596261,0.9454545526943741,Lockdown,Wave 1,No
+halton,Workplaces,0.11559515907425703,0.3630392036009594,Lockdown,Wave 1,No
+halton,Residential,-0.08952979466501497,0.4817213945251727,Lockdown,Wave 1,No
+halton,Global,0.1687344397748725,0.18258105035288888,Lockdown,Wave 1,No
+york,Retail,0.3585930097240953,0.0036184231770732492,Lockdown,Wave 1,Yes
+york,Grocery,0.40031220823252145,0.00104694029962014,Lockdown,Wave 1,Yes
+york,Parks,0.01856036658077251,0.8842616833432915,Lockdown,Wave 1,No
+york,Transit,0.11708456572288299,0.3568469534106812,Lockdown,Wave 1,No
+york,Workplaces,0.20040350821814965,0.11233525266090368,Lockdown,Wave 1,No
+york,Residential,-0.156839304039818,0.21584164058080707,Lockdown,Wave 1,No
+york,Global,0.18024396507059015,0.15408940284113798,Lockdown,Wave 1,No
+durham,Retail,0.7124244980758987,4.0565633569342704e-11,7 Days after lockdown,Wave 1,Yes
+durham,Grocery,0.565170594448538,1.1419976936444706e-6,7 Days after lockdown,Wave 1,Yes
+durham,Parks,0.3658294702705479,0.002951527181920819,7 Days after lockdown,Wave 1,Yes
+durham,Transit,0.6910347302006428,2.613850125340391e-10,7 Days after lockdown,Wave 1,Yes
+durham,Workplaces,0.6824930469649819,5.264117284279045e-10,7 Days after lockdown,Wave 1,Yes
+durham,Residential,-0.6189291299885804,5.003352948863191e-8,7 Days after lockdown,Wave 1,Yes
+durham,Global,0.6818724480463042,5.533738347998558e-10,7 Days after lockdown,Wave 1,Yes
+peel,Retail,0.8398779460994575,4.201760156376981e-18,7 Days after lockdown,Wave 1,Yes
+peel,Grocery,0.7705061704096055,9.718718374940758e-14,7 Days after lockdown,Wave 1,Yes
+peel,Parks,0.5287603318846128,7.074756256203746e-6,7 Days after lockdown,Wave 1,Yes
+peel,Transit,0.8924310511972446,4.184244544436321e-23,7 Days after lockdown,Wave 1,Yes
+peel,Workplaces,0.7869654754534728,1.2633086704956808e-14,7 Days after lockdown,Wave 1,Yes
+peel,Residential,-0.6855407475703458,4.1116907683846527e-10,7 Days after lockdown,Wave 1,Yes
+peel,Global,0.856464069471307,1.8361756263390382e-19,7 Days after lockdown,Wave 1,Yes
+toronto,Retail,0.7674616786512125,1.3915553594856302e-13,7 Days after lockdown,Wave 1,Yes
+toronto,Grocery,0.6771718378353402,8.046910006831779e-10,7 Days after lockdown,Wave 1,Yes
+toronto,Parks,0.3156508112714986,0.01106133400037835,7 Days after lockdown,Wave 1,No
+toronto,Transit,0.7404926429093568,2.682405157386783e-12,7 Days after lockdown,Wave 1,Yes
+toronto,Workplaces,0.6790917886043931,6.91148876818843e-10,7 Days after lockdown,Wave 1,Yes
+toronto,Residential,-0.5835049616004502,4.1855930037608195e-7,7 Days after lockdown,Wave 1,Yes
+toronto,Global,0.7247939500790571,1.2767156710507082e-11,7 Days after lockdown,Wave 1,Yes
+halton,Retail,0.5098271464904185,1.684833974476949e-5,7 Days after lockdown,Wave 1,Yes
+halton,Grocery,0.47850956904744163,6.350405096887451e-5,7 Days after lockdown,Wave 1,Yes
+halton,Parks,0.4907439300176305,3.8402494111667044e-5,7 Days after lockdown,Wave 1,Yes
+halton,Transit,0.4277291543179203,4.227951148591393e-4,7 Days after lockdown,Wave 1,Yes
+halton,Workplaces,0.4435910079017004,2.4135189180629954e-4,7 Days after lockdown,Wave 1,Yes
+halton,Residential,-0.3918693944318124,0.0013634081199570282,7 Days after lockdown,Wave 1,Yes
+halton,Global,0.6044718714815316,1.2283246751391e-7,7 Days after lockdown,Wave 1,Yes
+york,Retail,0.8338857028776718,1.1943150145337137e-17,7 Days after lockdown,Wave 1,Yes
+york,Grocery,0.6814557169204644,5.722105356032226e-10,7 Days after lockdown,Wave 1,Yes
+york,Parks,0.02598173185304567,0.838516370861744,7 Days after lockdown,Wave 1,No
+york,Transit,0.804394957880511,1.1856502477598326e-15,7 Days after lockdown,Wave 1,Yes
+york,Workplaces,0.7724143788156853,7.738894210062438e-14,7 Days after lockdown,Wave 1,Yes
+york,Residential,-0.6725970656349848,1.1509589631541946e-9,7 Days after lockdown,Wave 1,Yes
+york,Global,0.6833090637705904,4.928570878908233e-10,7 Days after lockdown,Wave 1,Yes
+durham,Retail,0.7526920161706384,7.371943716569363e-13,14 Days after lockdown,Wave 1,Yes
+durham,Grocery,0.46520738952486934,1.0742243596599363e-4,14 Days after lockdown,Wave 1,Yes
+durham,Parks,0.3080255809092894,0.013280192685431541,14 Days after lockdown,Wave 1,No
+durham,Transit,0.7806070884556122,2.836756182523717e-14,14 Days after lockdown,Wave 1,Yes
+durham,Workplaces,0.7637609202083134,2.1372131786401944e-13,14 Days after lockdown,Wave 1,Yes
+durham,Residential,-0.7148007632327977,3.264036159298262e-11,14 Days after lockdown,Wave 1,Yes
+durham,Global,0.6904983086802166,2.733256210031346e-10,14 Days after lockdown,Wave 1,Yes
+peel,Retail,0.8948081599723714,2.170479685240905e-23,14 Days after lockdown,Wave 1,Yes
+peel,Grocery,0.6270701640336978,2.956587987450841e-8,14 Days after lockdown,Wave 1,Yes
+peel,Parks,0.6736721824564947,1.0587140131157983e-9,14 Days after lockdown,Wave 1,Yes
+peel,Transit,0.918135662591543,1.303248236930063e-26,14 Days after lockdown,Wave 1,Yes
+peel,Workplaces,0.8793290972559759,1.206813956989733e-21,14 Days after lockdown,Wave 1,Yes
+peel,Residential,-0.8109755480566229,4.558982061423606e-16,14 Days after lockdown,Wave 1,Yes
+peel,Global,0.8763087109641481,2.4788696283691248e-21,14 Days after lockdown,Wave 1,Yes
+toronto,Retail,0.822746218731369,7.490619992868642e-17,14 Days after lockdown,Wave 1,Yes
+toronto,Grocery,0.6707996866175049,1.322453896294148e-9,14 Days after lockdown,Wave 1,Yes
+toronto,Parks,0.5127044019598596,1.4815941486931964e-5,14 Days after lockdown,Wave 1,Yes
+toronto,Transit,0.8210834899018835,9.744789973593935e-17,14 Days after lockdown,Wave 1,Yes
+toronto,Workplaces,0.7809757357237715,2.7087743910324744e-14,14 Days after lockdown,Wave 1,Yes
+toronto,Residential,-0.717708448050128,2.4942317997057964e-11,14 Days after lockdown,Wave 1,Yes
+toronto,Global,0.796747313959869,3.4440715414203205e-15,14 Days after lockdown,Wave 1,Yes
+halton,Retail,0.8130862359405562,3.3288547109662784e-16,14 Days after lockdown,Wave 1,Yes
+halton,Grocery,0.7426920373232119,2.136572301165146e-12,14 Days after lockdown,Wave 1,Yes
+halton,Parks,0.3534419264381175,0.004171402872737993,14 Days after lockdown,Wave 1,Yes
+halton,Transit,0.7823995923403622,2.2644948071377915e-14,14 Days after lockdown,Wave 1,Yes
+halton,Workplaces,0.7815813673434254,2.5104475253912257e-14,14 Days after lockdown,Wave 1,Yes
+halton,Residential,-0.7149096296501583,3.231522357596347e-11,14 Days after lockdown,Wave 1,Yes
+halton,Global,0.7786255585116096,3.630216438484031e-14,14 Days after lockdown,Wave 1,Yes
+york,Retail,0.7997993171247298,2.262801188188267e-15,14 Days after lockdown,Wave 1,Yes
+york,Grocery,0.5749072228925077,6.752586927446765e-7,14 Days after lockdown,Wave 1,Yes
+york,Parks,0.12078496831522673,0.34174558804132105,14 Days after lockdown,Wave 1,No
+york,Transit,0.8121988736911694,3.801201440815907e-16,14 Days after lockdown,Wave 1,Yes
+york,Workplaces,0.7891242155655209,9.53914996474233e-15,14 Days after lockdown,Wave 1,Yes
+york,Residential,-0.7272985143078725,1.0026059624275523e-11,14 Days after lockdown,Wave 1,Yes
+york,Global,0.70453277947254,8.222554990912201e-11,14 Days after lockdown,Wave 1,Yes
+durham,Retail,0.05709928463911259,0.6846629011195906,Lockdown,Wave 2,No
+durham,Grocery,-0.010619907159177969,0.9398386967634966,Lockdown,Wave 2,No
+durham,Parks,0.10451458569753956,0.45640616828659564,Lockdown,Wave 2,No
+durham,Transit,0.18505169123816542,0.18465335762567586,Lockdown,Wave 2,No
+durham,Workplaces,-0.2748739368997844,0.046376796072056865,Lockdown,Wave 2,No
+durham,Residential,0.1436669773460533,0.30474664797847206,Lockdown,Wave 2,No
+durham,Global,-2.974558162105275e-4,0.9983133749636106,Lockdown,Wave 2,No
+peel,Retail,0.13225844613967735,0.2680853159355337,Lockdown,Wave 2,No
+peel,Grocery,0.13332991274109435,0.2641930227360951,Lockdown,Wave 2,No
+peel,Parks,0.14869368313005835,0.2125554871897575,Lockdown,Wave 2,No
+peel,Transit,0.30001749043660414,0.010453495626476007,Lockdown,Wave 2,No
+peel,Workplaces,-0.25944047210776483,0.027755245055076424,Lockdown,Wave 2,No
+peel,Residential,0.19402482776788274,0.10244759820216327,Lockdown,Wave 2,No
+peel,Global,0.08115288831408522,0.4979793531813588,Lockdown,Wave 2,No
+toronto,Retail,-0.06346215756843875,0.5963864082252605,Lockdown,Wave 2,No
+toronto,Grocery,-0.07662813511118653,0.5223199664307664,Lockdown,Wave 2,No
+toronto,Parks,0.12168767951335303,0.3085481253847564,Lockdown,Wave 2,No
+toronto,Transit,-0.1082652013345235,0.3653342839959268,Lockdown,Wave 2,No
+toronto,Workplaces,-0.21553768493950617,0.06901427287565821,Lockdown,Wave 2,No
+toronto,Residential,0.14532113264326457,0.22322865872228104,Lockdown,Wave 2,No
+toronto,Global,-0.048927325751792476,0.683170326450544,Lockdown,Wave 2,No
+halton,Retail,-0.030470522051650226,0.8285283326181456,Lockdown,Wave 2,No
+halton,Grocery,-0.03970846725762819,0.7777134031219526,Lockdown,Wave 2,No
+halton,Parks,0.2453823287469793,0.07656079340972616,Lockdown,Wave 2,No
+halton,Transit,-0.016166654908152646,0.9085275524281615,Lockdown,Wave 2,No
+halton,Workplaces,-0.25437905059586097,0.06604561033383807,Lockdown,Wave 2,No
+halton,Residential,0.10323225385311006,0.4619801772807305,Lockdown,Wave 2,No
+halton,Global,0.08734661038986709,0.5339942521398853,Lockdown,Wave 2,No
+york,Retail,0.13565681168314778,0.30562268065876247,Lockdown,Wave 2,No
+york,Grocery,0.16606353782599748,0.2087480383682477,Lockdown,Wave 2,No
+york,Parks,0.20782903306313635,0.11421921129277662,Lockdown,Wave 2,No
+york,Transit,-0.20265418228967405,0.12372332675146859,Lockdown,Wave 2,No
+york,Workplaces,-0.2793222313366764,0.03215706297358504,Lockdown,Wave 2,No
+york,Residential,0.1029141852281172,0.4379568093711639,Lockdown,Wave 2,No
+york,Global,0.11981948989103382,0.3660370763568167,Lockdown,Wave 2,No
+durham,Retail,0.5088625530242936,9.992749105027726e-5,7 Days after lockdown,Wave 2,Yes
+durham,Grocery,0.38984077178210474,0.003907582010177191,7 Days after lockdown,Wave 2,Yes
+durham,Parks,0.08752588721962583,0.5331519604517347,7 Days after lockdown,Wave 2,No
+durham,Transit,0.542525906517529,2.7102861038248875e-5,7 Days after lockdown,Wave 2,Yes
+durham,Workplaces,-0.05116268531408391,0.7159873747045387,7 Days after lockdown,Wave 2,No
+durham,Residential,-0.18400380191642726,0.18719606232714192,7 Days after lockdown,Wave 2,No
+durham,Global,0.37953439743685363,0.005064910726891503,7 Days after lockdown,Wave 2,Yes
+peel,Retail,0.27652005163482146,0.018706261839413693,7 Days after lockdown,Wave 2,No
+peel,Grocery,0.2743075866397957,0.019713292976798767,7 Days after lockdown,Wave 2,No
+peel,Parks,0.17514899245202767,0.1411343760882451,7 Days after lockdown,Wave 2,No
+peel,Transit,0.21727933170353247,0.06674619263911286,7 Days after lockdown,Wave 2,No
+peel,Workplaces,-0.25135484206661873,0.03318720198524839,7 Days after lockdown,Wave 2,No
+peel,Residential,0.13164435490875173,0.27033340235425896,7 Days after lockdown,Wave 2,No
+peel,Global,0.17674725669801128,0.13748479847413964,7 Days after lockdown,Wave 2,No
+toronto,Retail,0.16175022335346845,0.17464362309723114,7 Days after lockdown,Wave 2,No
+toronto,Grocery,0.1193026111343656,0.3181970343624354,7 Days after lockdown,Wave 2,No
+toronto,Parks,0.14779789735271517,0.21535455779124887,7 Days after lockdown,Wave 2,No
+toronto,Transit,-0.011928498921370602,0.9207819856307977,7 Days after lockdown,Wave 2,No
+toronto,Workplaces,-0.20032937572694706,0.09155493248557338,7 Days after lockdown,Wave 2,No
+toronto,Residential,0.06556139951552586,0.5842688347414113,7 Days after lockdown,Wave 2,No
+toronto,Global,0.06198222389239367,0.604995814336247,7 Days after lockdown,Wave 2,No
+halton,Retail,0.5774500355595651,5.986343075517345e-6,7 Days after lockdown,Wave 2,Yes
+halton,Grocery,0.42658102581183627,0.0014465368507648375,7 Days after lockdown,Wave 2,Yes
+halton,Parks,0.11623461032743637,0.4071963160062605,7 Days after lockdown,Wave 2,No
+halton,Transit,0.5968033295142239,2.3989930831802743e-6,7 Days after lockdown,Wave 2,Yes
+halton,Workplaces,0.06318096053372976,0.6531100428086999,7 Days after lockdown,Wave 2,No
+halton,Residential,-0.2128236990814871,0.12601121046779062,7 Days after lockdown,Wave 2,No
+halton,Global,0.4422358818169696,9.147891079239979e-4,7 Days after lockdown,Wave 2,Yes
+york,Retail,0.43636481266372523,5.503102826840599e-4,7 Days after lockdown,Wave 2,Yes
+york,Grocery,0.37839370586762555,0.0031262980820582105,7 Days after lockdown,Wave 2,Yes
+york,Parks,0.09750427380452002,0.46253850464588964,7 Days after lockdown,Wave 2,No
+york,Transit,0.24942402423653987,0.05676704062051891,7 Days after lockdown,Wave 2,No
+york,Workplaces,-0.03707509591400074,0.780412214674047,7 Days after lockdown,Wave 2,No
+york,Residential,-0.12238362221174594,0.35579324977071747,7 Days after lockdown,Wave 2,No
+york,Global,0.28527364302417724,0.02851882133031165,7 Days after lockdown,Wave 2,No
+durham,Retail,0.6629349349434072,6.363086426771967e-8,14 Days after lockdown,Wave 2,Yes
+durham,Grocery,0.46726306508198506,4.196205997108383e-4,14 Days after lockdown,Wave 2,Yes
+durham,Parks,0.040971833995971346,0.7708301252772094,14 Days after lockdown,Wave 2,No
+durham,Transit,0.6708157463828238,3.8840351772874146e-8,14 Days after lockdown,Wave 2,Yes
+durham,Workplaces,0.3937161054390529,0.003536896382230517,14 Days after lockdown,Wave 2,Yes
+durham,Residential,-0.4666041046755438,4.2865002510932796e-4,14 Days after lockdown,Wave 2,Yes
+durham,Global,0.5724675144802126,7.50490143815732e-6,14 Days after lockdown,Wave 2,Yes
+peel,Retail,0.31757823980830036,0.006561131390674217,14 Days after lockdown,Wave 2,Yes
+peel,Grocery,0.21149122382957147,0.07452327141807524,14 Days after lockdown,Wave 2,No
+peel,Parks,-0.16001123361776087,0.17938628404411316,14 Days after lockdown,Wave 2,No
+peel,Transit,0.29162101669856777,0.012938418797830866,14 Days after lockdown,Wave 2,No
+peel,Workplaces,-0.012575808116818044,0.9164981521756866,14 Days after lockdown,Wave 2,No
+peel,Residential,-0.06091743451299209,0.6112236556518603,14 Days after lockdown,Wave 2,No
+peel,Global,0.11823702259470241,0.3225697487479756,14 Days after lockdown,Wave 2,No
+toronto,Retail,0.44899344891431714,7.622441634862953e-5,14 Days after lockdown,Wave 2,Yes
+toronto,Grocery,0.33279395078241814,0.004285699113423044,14 Days after lockdown,Wave 2,Yes
+toronto,Parks,-0.08836678059350334,0.46042945852264794,14 Days after lockdown,Wave 2,No
+toronto,Transit,0.34644902336206806,0.00287136406524794,14 Days after lockdown,Wave 2,Yes
+toronto,Workplaces,0.0212972458828261,0.85906030583875,14 Days after lockdown,Wave 2,No
+toronto,Residential,-0.11062798083414031,0.35490110920284557,14 Days after lockdown,Wave 2,No
+toronto,Global,0.20698762378001606,0.08106208710484585,14 Days after lockdown,Wave 2,No
+halton,Retail,0.4944080244800845,1.680032931512325e-4,14 Days after lockdown,Wave 2,Yes
+halton,Grocery,0.2649026356863437,0.05524626352333497,14 Days after lockdown,Wave 2,No
+halton,Parks,-0.11753708031433546,0.4019241195309614,14 Days after lockdown,Wave 2,No
+halton,Transit,0.5280767712797886,4.826234203631172e-5,14 Days after lockdown,Wave 2,Yes
+halton,Workplaces,0.2892146004445436,0.035691451699191794,14 Days after lockdown,Wave 2,No
+halton,Residential,-0.2758744541231333,0.045555057780753,14 Days after lockdown,Wave 2,No
+halton,Global,0.3275179889663105,0.016668025546893877,14 Days after lockdown,Wave 2,No
+york,Retail,0.5412644099431176,9.58154331305605e-6,14 Days after lockdown,Wave 2,Yes
+york,Grocery,0.32762359025508403,0.01130864750457297,14 Days after lockdown,Wave 2,No
+york,Parks,-0.18561685370899575,0.1592763593958202,14 Days after lockdown,Wave 2,No
+york,Transit,0.53590426610721,1.2189832889581598e-5,14 Days after lockdown,Wave 2,Yes
+york,Workplaces,0.2793804679276755,0.032119670215640495,14 Days after lockdown,Wave 2,No
+york,Residential,-0.2825018252992832,0.030167903280752282,14 Days after lockdown,Wave 2,No
+york,Global,0.25984910935979016,0.04686494143067074,14 Days after lockdown,Wave 2,No

@@ -1,0 +1,198 @@
+---
+title: "Regression and Correlation Analysis"
+output: html_notebook
+---
+
+## Load packages
+```{r}
+library(tidyverse)
+library(readxl)
+library(plm)
+```
+
+## Load Rt and Mobility data
+```{r, warning=F, message=F}
+# Rt data
+rt <- read_csv('estR/estR.csv') %>% 
+  select(`Mean(R)`, date_start, Region) %>% 
+  rename(Rt=`Mean(R)`, Date=date_start)
+
+# Mobility data
+regions = c('Regional Municipality of Durham', 'Regional Municipality of Halton', 'Regional Municipality of Peel', 'Toronto Division', 'Regional Municipality of York')
+mob <- read_csv('data/2020_CA_Region_Mobility_Report.csv') %>% 
+  rename(Retail=retail_and_recreation_percent_change_from_baseline,
+         Grocery=grocery_and_pharmacy_percent_change_from_baseline,
+         Parks=parks_percent_change_from_baseline,
+         Transit=transit_stations_percent_change_from_baseline,
+         Workplaces=workplaces_percent_change_from_baseline,
+         Residential=residential_percent_change_from_baseline) %>% 
+  select(sub_region_2, date, 
+         Retail, Grocery, Parks, Transit, Workplaces, Residential) %>% 
+  filter(sub_region_2 %in% regions) %>% 
+  mutate(Global = (Retail + Grocery + Parks + Transit + Workplaces + Residential)/6)%>%
+  rename(Region=sub_region_2, Date=date) %>% 
+  mutate(Region = case_when(Region == 'Regional Municipality of Durham' ~ 'Durham',
+                            Region == 'Regional Municipality of Halton' ~ 'Halton',
+                            Region == 'Regional Municipality of Peel' ~ 'Peel',
+                            Region == 'Toronto Division' ~ 'Toronto',
+                            Region == 'Regional Municipality of York' ~ 'York'))
+```
+
+## Load restriction data
+```{r, warning=F, message=F}
+# Lockdown data
+timeline <- read_excel('data/restrictions.xlsx') %>% 
+  mutate(Date_start = as.Date(Date_start)) %>% 
+  mutate(Date_end = as.Date(Date_end)) %>% 
+  pivot_longer(cols = Toronto:Halton, names_to = 'Region', values_to = 'Restrictions') %>% 
+  mutate(Restrictions = factor(Restrictions, 
+                               levels = c("Enhanced lockdown", "Lockdown/Stage 1", "Red/Stage 2/Modified Stage 2", "Green/Stage 3", "Orange/Gathering limits"))) %>% 
+  filter(Restrictions == 'Enhanced lockdown') %>% 
+  mutate(Wave = case_when(Date_start==as.Date('2020-03-17') ~ 'Wave 1',
+                          TRUE ~ 'Wave 2')) %>% 
+  filter(Wave == 'Wave 1' | Date_start == as.Date('2020-12-26')) %>% 
+  mutate(Date_end = case_when(Wave == 'Wave 1' ~ Date_end,
+                              Wave == 'Wave 2' & (Region == 'Toronto' | Region == 'Peel') ~ as.Date('2020-03-19'),
+                              Wave == 'Wave 2' & Region == 'York' ~ as.Date('2020-02-22'),
+                              Wave == 'Wave 2' & (Region == 'Durham' | Region == 'Halton') ~ as.Date('2020-02-16')))
+```
+
+## Join Rt and Mob together
+```{r}
+# wave1
+wave1_lag0 <- mob %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter((Date >= as.Date('2020-03-17') & Date <= as.Date('2020-05-19'))) %>% 
+  mutate(Wave = 'Wave 1') %>% 
+  mutate(Period = 'Lockdown')
+
+wave1_lag7 <- mob %>% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %>% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %>% 
+  pivot_longer(!Date, names_to='mob') %>% 
+  separate(mob, c("Mobility", "Region")) %>% 
+  pivot_wider(names_from = Mobility, values_from = value) %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter((Date >= as.Date('2020-03-17') & Date <= as.Date('2020-05-19'))) %>% 
+  mutate(Wave = 'Wave 1') %>% 
+  mutate(Period = '7 days after lockdown')
+
+wave1_lag14 <- mob %>% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %>% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 14))) %>% 
+  pivot_longer(!Date, names_to='mob') %>% 
+  separate(mob, c("Mobility", "Region")) %>% 
+  pivot_wider(names_from = Mobility, values_from = value) %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter((Date >= as.Date('2020-03-17') & Date <= as.Date('2020-05-19'))) %>% 
+  mutate(Wave = 'Wave 1') %>% 
+  mutate(Period = '14 days after lockdown')
+
+# wave2
+wave2_lag0 <- mob %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter(Date >= as.Date('2020-12-26') &
+            ( (Region == 'Toronto' | Region=='Peel') | 
+                (Region =='York' & Date <= as.Date('2021-02-22')) |
+                (Region =='Durham' & Date <= as.Date('2021-02-16')) |
+                (Region =='Halton' & Date <= as.Date('2021-02-16')) ) 
+         ) %>% 
+  mutate(Wave = 'Wave 2') %>% 
+  mutate(Period = 'Lockdown')
+
+wave2_lag7 <- mob %>% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %>% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %>% 
+  pivot_longer(!Date, names_to='mob') %>% 
+  separate(mob, c("Mobility", "Region")) %>% 
+  pivot_wider(names_from = Mobility, values_from = value) %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter(Date >= as.Date('2020-12-26') &
+            ( (Region == 'Toronto' | Region=='Peel') | 
+                (Region =='York' & Date <= as.Date('2021-02-22')) |
+                (Region =='Durham' & Date <= as.Date('2021-02-16')) |
+                (Region =='Halton' & Date <= as.Date('2021-02-16')) ) 
+         ) %>% 
+  mutate(Wave = 'Wave 2') %>% 
+  mutate(Period = '7 days after lockdown')
+
+wave2_lag14 <- mob %>% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %>% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %>% 
+  pivot_longer(!Date, names_to='mob') %>% 
+  separate(mob, c("Mobility", "Region")) %>% 
+  pivot_wider(names_from = Mobility, values_from = value) %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter(Date >= as.Date('2020-12-26') &
+            ( (Region == 'Toronto' | Region=='Peel') | 
+                (Region =='York' & Date <= as.Date('2021-02-22')) |
+                (Region =='Durham' & Date <= as.Date('2021-02-16')) |
+                (Region =='Halton' & Date <= as.Date('2021-02-16')) ) 
+         ) %>% 
+  mutate(Wave = 'Wave 2') %>% 
+  mutate(Period = '14 days after lockdown')
+```
+
+```{r}
+dfs <- list(wave1_lag0, wave1_lag7, wave1_lag14, wave2_lag0, wave2_lag7, wave2_lag14)
+regions <- unique(timeline$Region)
+```
+
+
+```{r}
+# for (df in dfs){
+#   for (region in regions) {
+#     data <- df %>% filter(Region == region)
+#     retail <- plm(Rt ~ Retail,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     grocery <- plm(Rt ~ Grocery,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     parks <- plm(Rt ~ Parks,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     transit <- plm(Rt ~ Transit,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     workplaces <- plm(Rt ~ Workplaces,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     residential <- plm(Rt ~ Residential,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     global <- plm(Rt ~ Global,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     
+#   }
+# }
+
+```
+
+```{r}
+data <- wave1_lag14 %>% filter(Region == 'Durham')
+
+test <- plm(Rt ~ Global,
+    data = data,
+    index = 'Date',
+    model = 'within')
+
+summary(test)
+```
+
+```{r}
+lm(formula = Rt ~ Global + Date - 1, data = data)
+```
+
+```{r}
+cor.test(formula = Rt ~ Global + Date - 1, data = data)
+```
+

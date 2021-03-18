@@ -1,0 +1,391 @@
+---
+title: "Segmentation Analysis"
+output: html_notebook
+---
+
+## Load packages
+```{r, warning=F, message=F}
+library(tidyverse)
+library(readxl)
+library(segmented)
+```
+
+## Read data
+```{r}
+# Restriction data
+timeline <- read_excel('data/restrictions.xlsx') %>% 
+  mutate(Date_start = as.Date(Date_start)) %>% 
+  mutate(Date_end = as.Date(Date_end)) %>% 
+  pivot_longer(cols = Toronto:Halton, names_to = 'Region', values_to = 'Restrictions') %>% 
+  mutate(Restrictions = factor(Restrictions, 
+                               levels = c("Enhanced lockdown", "Lockdown/Stage 1", "Red/Stage 2/Modified Stage 2", "Green/Stage 3", "Orange/Gathering limits")))
+
+# Rt data
+rt <- read_csv('estR/estR.csv') %>% 
+  select(`Mean(R)`, date_start, Region) %>% 
+  pivot_wider(names_from = Region, values_from = `Mean(R)`) %>% 
+  rename(Date=date_start)
+```
+
+## Timeline
+```{r}
+Durham <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-11-23', '2020-12-26', '2021-02-16'))
+Halton <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-12-26', '2021-02-16'))
+Peel <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+Toronto <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+York <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-10-19', '2020-11-07', '2020-11-16', '2020-12-14', '2020-12-26', '2021-02-22'))
+
+breakpoints <- timeline %>% 
+  filter((Region == 'Durham' & Date_start %in% Durham) |
+         (Region == 'Halton' & Date_start %in% Halton) |
+         (Region == 'Peel' & Date_start %in% Peel) |
+         (Region == 'Toronto' & Date_start %in% Toronto) |
+         (Region == 'York' & Date_start %in% York))
+```
+
+## Get segmented regressions and tidy Rt
+```{r}
+segs <- rt %>% 
+  mutate(across(where(is.numeric), ~ fitted(
+    segmented(lm(. ~ Date),
+              seg.Z = ~ Date)
+    ))) %>% 
+  pivot_longer(cols = Toronto:Halton,
+               names_to = 'Region', values_to = 'Rt')
+
+tidy_rt <- rt %>% 
+  pivot_longer(cols = Toronto:Halton,
+               names_to = 'Region', values_to = 'Rt')
+```
+
+## Get default segmented breakpoints
+```{r}
+x <- tidy_rt %>% filter(Region=='Toronto')
+my.lm <- lm(Rt ~ Date, data = x)
+# make segmented regression
+my.seg <- segmented(my.lm,
+                    seg.Z = ~ Date)
+my.fitted <- fitted(my.seg)
+tor <- as.numeric(my.seg$psi[, 2])
+tor <- data.frame(Region = 'Toronto', bp = tor)
+
+x <- tidy_rt %>% filter(Region=='Peel')
+my.lm <- lm(Rt ~ Date, data = x)
+# make segmented regression
+my.seg <- segmented(my.lm,
+                    seg.Z = ~ Date)
+peel <- as.numeric(my.seg$psi[, 2])
+peel <- data.frame(Region = 'Peel', bp = peel)
+
+x <- tidy_rt %>% filter(Region=='York')
+my.lm <- lm(Rt ~ Date, data = x)
+# make segmented regression
+my.seg <- segmented(my.lm,
+                    seg.Z = ~ Date)
+york <- as.numeric(my.seg$psi[, 2])
+york <- data.frame(Region = 'York', bp = york)
+
+x <- tidy_rt %>% filter(Region=='Durham')
+my.lm <- lm(Rt ~ Date, data = x)
+# make segmented regression
+my.seg <- segmented(my.lm,
+                    seg.Z = ~ Date)
+dur <- as.numeric(my.seg$psi[, 2])
+dur <- data.frame(Region = 'Durham', bp = dur)
+
+x <- tidy_rt %>% filter(Region=='Halton')
+my.lm <- lm(Rt ~ Date, data = x)
+# make segmented regression
+my.seg <- segmented(my.lm,
+                    seg.Z = ~ Date)
+hal <- as.numeric(my.seg$psi[, 2])
+hal <- data.frame(Region = 'Halton', bp = hal)
+
+bp <- rbind(tor, peel, york, dur, hal)
+```
+
+## Default graph
+```{r}
+fill <- c("Enhanced lockdown"='gray33', "Lockdown/Stage 1"='gray66', "Red/Stage 2/Modified Stage 2"='red', "Green/Stage 3"='green', "Orange/Gathering limits"='orange')
+
+seg_plot <- ggplot() +
+  geom_line(tidy_rt,
+            mapping = aes(x=Date,y=Rt)) +
+  geom_line(segs,
+            mapping = aes(x=Date, y=Rt),
+            color='blue') +
+  geom_rect(timeline, 
+            mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+            ymin=-Inf, ymax=Inf, alpha=0.3) +
+  geom_vline(breakpoints,
+             mapping = aes(xintercept=Date_start),
+             linetype = 'dashed') +
+  geom_vline(bp,
+             mapping = aes(xintercept = bp),
+             color = 'blue') +
+  scale_fill_manual(values=fill) +
+  scale_x_date(date_breaks = "1 month") +
+  facet_grid(rows=vars(Region)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+
+ggsave('graphs/segmented_default.png', seg_plot, height = 8.5, width = 11, units = 'in')
+
+seg_plot
+```
+
+## Get segmented regressions
+```{r}
+segs <- rt %>% 
+  mutate(across(where(is.numeric), ~ fitted(
+    segmented(lm(. ~ Date),
+              seg.Z = ~ Date,
+              npsi = 2)
+    ))) %>% 
+  pivot_longer(cols = Toronto:Halton,
+               names_to = 'Region', values_to = 'Rt')
+```
+
+## Graphs
+```{r}
+fill <- c("Enhanced lockdown"='gray33', "Lockdown/Stage 1"='gray66', "Red/Stage 2/Modified Stage 2"='red', "Green/Stage 3"='green', "Orange/Gathering limits"='orange')
+
+seg_plot <- ggplot() +
+  geom_line(tidy_rt,
+            mapping = aes(x=Date,y=Rt)) +
+  geom_line(segs,
+            mapping = aes(x=Date, y=Rt),
+            color='blue') +
+  geom_rect(timeline, 
+            mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+            ymin=-Inf, ymax=Inf, alpha=0.3) +
+  geom_vline(breakpoints,
+             mapping = aes(xintercept=Date_start),
+             linetype = 'dashed') +
+  scale_fill_manual(values=fill) +
+  scale_x_date(date_breaks = "1 month") +
+  facet_grid(rows=vars(Region)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+
+ggsave('graphs/segmented_2.png', seg_plot, height = 8.5, width = 11, units = 'in')
+
+seg_plot
+```
+
+## Function
+```{r}
+get_graphs <- function (nbreaks) {
+  
+  ### Get breakpoints ###
+  x <- tidy_rt %>% filter(Region=='Toronto')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  my.fitted <- fitted(my.seg)
+  tor <- as.numeric(my.seg$psi[, 2])
+  tor <- data.frame(Region = rep('Toronto', times=nbreaks), bp = tor)
+  
+  x <- tidy_rt %>% filter(Region=='Peel')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  peel <- as.numeric(my.seg$psi[, 2])
+  peel <- data.frame(Region = rep('Peel', times=nbreaks), bp = peel)
+  
+  x <- tidy_rt %>% filter(Region=='York')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  york <- as.numeric(my.seg$psi[, 2])
+  york <- data.frame(Region = rep('York', times=nbreaks), bp = york)
+  
+  x <- tidy_rt %>% filter(Region=='Durham')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  dur <- as.numeric(my.seg$psi[, 2])
+  dur <- data.frame(Region = rep('Durham', times=nbreaks), bp = dur)
+  
+  x <- tidy_rt %>% filter(Region=='Halton')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  hal <- as.numeric(my.seg$psi[, 2])
+  hal <- data.frame(Region = rep('Halton', times=nbreaks), bp = hal)
+  
+  bp <- rbind(tor, peel, york, dur, hal)
+  
+  ### Get segmented regressions
+  segs <- rt %>% 
+  mutate(across(where(is.numeric), ~ fitted(
+    segmented(lm(. ~ Date),
+              seg.Z = ~ Date,
+              npsi = nbreaks)
+    ))) %>% 
+  pivot_longer(cols = Toronto:Halton,
+               names_to = 'Region', values_to = 'Rt')
+  
+  ### Get graphs ###
+  fill <- c("Enhanced lockdown"='gray33', "Lockdown/Stage 1"='gray66', "Red/Stage 2/Modified Stage 2"='red', "Green/Stage 3"='green', "Orange/Gathering limits"='orange')
+
+  seg_plot <- ggplot() +
+    geom_line(tidy_rt,
+              mapping = aes(x=Date,y=Rt)) +
+    geom_line(segs,
+              mapping = aes(x=Date, y=Rt),
+              color='blue') +
+    geom_rect(timeline, 
+              mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+              ymin=-Inf, ymax=Inf, alpha=0.3) +
+    geom_vline(breakpoints,
+               mapping = aes(xintercept=Date_start),
+               linetype = 'dashed') +
+    geom_vline(bp,
+               mapping = aes(xintercept=bp),
+               color = 'blue') +
+    scale_fill_manual(values=fill) +
+    scale_x_date(date_breaks = "1 month") +
+    facet_grid(rows=vars(Region)) +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust=1))
+  
+  filename <- paste('graphs/segmented_', nbreaks, '.png', sep='')
+
+  ggsave(filename, seg_plot, height = 8.5, width = 11, units = 'in')
+
+  return(list(seg_plot=seg_plot, bp=bp))
+}
+```
+
+## Get graphs for 2 to 4 breakpoints
+```{r}
+for (n in 2:4) {
+  get_graphs(n)
+}
+```
+
+```{r}
+get_graphs_psi <- function (nbreaks) {
+  
+  ### Get breakpoints ###
+  x <- tidy_rt %>% filter(Region=='Toronto')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      psi = as.Date('2020-05-19', '2020-09-18'))
+  my.fitted <- fitted(my.seg)
+  tor <- as.numeric(my.seg$psi[, 2])
+  tor <- data.frame(Region = rep('Toronto', times=nbreaks), bp = tor)
+  
+  x <- tidy_rt %>% filter(Region=='Peel')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      psi = as.Date('2020-05-19', '2020-09-18'))
+  peel <- as.numeric(my.seg$psi[, 2])
+  peel <- data.frame(Region = rep('Peel', times=nbreaks), bp = peel)
+  
+  x <- tidy_rt %>% filter(Region=='York')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      psi = as.Date('2020-05-19', '2020-10-19'))
+  york <- as.numeric(my.seg$psi[, 2])
+  york <- data.frame(Region = rep('York', times=nbreaks), bp = york)
+  
+  x <- tidy_rt %>% filter(Region=='Durham')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      psi = as.Date('2020-05-19', '2020-11-16'))
+  dur <- as.numeric(my.seg$psi[, 2])
+  dur <- data.frame(Region = rep('Durham', times=nbreaks), bp = dur)
+  
+  x <- tidy_rt %>% filter(Region=='Halton')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      psi = as.Date('2020-05-19', '2020-11-16'))
+  hal <- as.numeric(my.seg$psi[, 2])
+  hal <- data.frame(Region = rep('Halton', times=nbreaks), bp = hal)
+  
+  bp <- rbind(tor, peel, york, dur, hal)
+  
+  ### Get segmented regressions
+  segs <- rt %>% 
+  mutate(across(where(is.numeric), ~ fitted(
+    segmented(lm(. ~ Date),
+              seg.Z = ~ Date,
+              npsi = nbreaks)
+    ))) %>% 
+  pivot_longer(cols = Toronto:Halton,
+               names_to = 'Region', values_to = 'Rt')
+  
+  ### Get graphs ###
+  fill <- c("Enhanced lockdown"='gray33', "Lockdown/Stage 1"='gray66', "Red/Stage 2/Modified Stage 2"='red', "Green/Stage 3"='green', "Orange/Gathering limits"='orange')
+
+  seg_plot <- ggplot() +
+    geom_line(tidy_rt,
+              mapping = aes(x=Date,y=Rt)) +
+    geom_line(segs,
+              mapping = aes(x=Date, y=Rt),
+              color='blue') +
+    geom_rect(timeline, 
+              mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+              ymin=-Inf, ymax=Inf, alpha=0.3) +
+    geom_vline(breakpoints,
+               mapping = aes(xintercept=Date_start),
+               linetype = 'dashed') +
+    geom_vline(bp,
+               mapping = aes(xintercept=bp),
+               color = 'blue') +
+    scale_fill_manual(values=fill) +
+    scale_x_date(date_breaks = "1 month") +
+    facet_grid(rows=vars(Region)) +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust=1))
+  
+  filename <- 'graphs/segmented_2psi'
+
+  ggsave(filename, seg_plot, height = 8.5, width = 11, units = 'in')
+
+  return(list(seg_plot=seg_plot, bp=bp))
+}
+```
+
+```{r}
+x <- tidy_rt %>% filter(Region=='Toronto')
+my.lm <- lm(Rt ~ Date, data = x)
+# make segmented regression
+my.seg <- segmented(my.lm,
+                    seg.Z = ~ Date,
+                    psi = as.Date('2020-05-19', '2020-10-01'))
+my.fitted <- fitted(my.seg)
+
+ggplot() +
+  geom_line(x, mapping=aes(x=Date, y=Rt)) +
+  geom_line(mapping=aes(x=x$Date, y=my.fitted), color='blue')
+# tor <- as.numeric(my.seg$psi[, 2])
+# tor <- data.frame(Region = rep('Toronto', times=2), bp = tor)
+```
+
+```{r}
+my.seg$psi[, 2]
+```
+
