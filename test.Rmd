@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Test Regression and Correlation Analysis"
 output: html_notebook
 ---
 
@@ -7,488 +7,192 @@ output: html_notebook
 ```{r}
 library(tidyverse)
 library(readxl)
-library(ggpubr)
-library(broom)
+library(plm)
 ```
 
-## Load data
-```{r}
+## Load Rt and Mobility data
+```{r, warning=F, message=F}
 # Rt data
 rt <- read_csv('estR/estR.csv') %>% 
   select(`Mean(R)`, date_start, Region) %>% 
   rename(Rt=`Mean(R)`, Date=date_start)
-t_rt <- rt %>% filter(Region == 'Toronto')
-p_rt <- rt %>% filter(Region == 'Peel')
-y_rt <- rt %>% filter(Region == 'York')
-h_rt <- rt %>% filter(Region == 'Halton')
-d_rt <- rt %>% filter(Region == 'Durham')
 
 # Mobility data
 regions = c('Regional Municipality of Durham', 'Regional Municipality of Halton', 'Regional Municipality of Peel', 'Toronto Division', 'Regional Municipality of York')
-mob <- read_csv('data/2020_CA_Region_Mobility_Report.csv')
-mob <- mob %>% 
-  mutate(`Global Mobility Score` = (retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline)/6)
-t_mob <- mob %>% 
-  filter(sub_region_2 == 'Toronto Division')
-p_mob <- mob %>% 
-  filter(sub_region_2=='Regional Municipality of Peel')
-y_mob <- mob %>% 
-  filter(sub_region_2=='Regional Municipality of York')
-d_mob <- mob %>% 
-  filter(sub_region_2=='Regional Municipality of Durham')
-h_mob <- mob %>% 
-  filter(sub_region_2=='Regional Municipality of Halton')
+mob <- read_csv('data/2020_CA_Region_Mobility_Report.csv') %>% 
+  rename(Retail=retail_and_recreation_percent_change_from_baseline,
+         Grocery=grocery_and_pharmacy_percent_change_from_baseline,
+         Parks=parks_percent_change_from_baseline,
+         Transit=transit_stations_percent_change_from_baseline,
+         Workplaces=workplaces_percent_change_from_baseline,
+         Residential=residential_percent_change_from_baseline) %>% 
+  select(sub_region_2, date, 
+         Retail, Grocery, Parks, Transit, Workplaces, Residential) %>% 
+  filter(sub_region_2 %in% regions) %>% 
+  mutate(Global = (Retail + Grocery + Parks + Transit + Workplaces + Residential)/6)%>%
+  rename(Region=sub_region_2, Date=date) %>% 
+  mutate(Region = case_when(Region == 'Regional Municipality of Durham' ~ 'Durham',
+                            Region == 'Regional Municipality of Halton' ~ 'Halton',
+                            Region == 'Regional Municipality of Peel' ~ 'Peel',
+                            Region == 'Toronto Division' ~ 'Toronto',
+                            Region == 'Regional Municipality of York' ~ 'York'))
 ```
 
-## Function to convert data into useful form
-Input: mobility data, rt data, lockdown start date, lockdown end date, columns to keep  
-Output: Df of specific region to run regressions on
+## Load restriction data
+```{r, warning=F, message=F}
+# Lockdown data
+timeline <- read_excel('data/restrictions.xlsx') %>% 
+  mutate(Date_start = as.Date(Date_start)) %>% 
+  mutate(Date_end = as.Date(Date_end)) %>% 
+  pivot_longer(cols = Toronto:Halton, names_to = 'Region', values_to = 'Restrictions') %>% 
+  mutate(Restrictions = factor(Restrictions, 
+                               levels = c("Enhanced lockdown", "Lockdown/Stage 1", "Red/Stage 2/Modified Stage 2", "Green/Stage 3", "Orange/Gathering limits"))) %>% 
+  filter(Restrictions == 'Enhanced lockdown') %>% 
+  mutate(Wave = case_when(Date_start==as.Date('2020-03-17') ~ 'Wave 1',
+                          TRUE ~ 'Wave 2')) %>% 
+  filter(Wave == 'Wave 1' | Date_start == as.Date('2020-12-26')) %>% 
+  mutate(Date_end = case_when(Wave == 'Wave 1' ~ Date_end,
+                              Wave == 'Wave 2' & (Region == 'Toronto' | Region == 'Peel') ~ as.Date('2020-03-19'),
+                              Wave == 'Wave 2' & Region == 'York' ~ as.Date('2020-02-22'),
+                              Wave == 'Wave 2' & (Region == 'Durham' | Region == 'Halton') ~ as.Date('2020-02-16')))
+```
+
+## Join Rt and Mob together
 ```{r}
-get_data <- function(mob_data, rt_data, lock_start, lock_end, cols) {
-  df <- mob_data %>% 
-    left_join(rt_data, by=c("date" = "Date")) %>% 
-    select(all_of(cols)) %>% 
-    mutate(date = as.Date(date)) %>% 
-    rename(retail=retail_and_recreation_percent_change_from_baseline,grocery=grocery_and_pharmacy_percent_change_from_baseline, parks=parks_percent_change_from_baseline, transit=transit_stations_percent_change_from_baseline, workplaces=workplaces_percent_change_from_baseline, residential=residential_percent_change_from_baseline, global=`Global Mobility Score`) %>% 
-    mutate(retail_lag7 = lag(retail, 7)) %>% 
-    mutate(grocery_lag7 = lag(grocery, 7) ) %>% 
-    mutate(parks_lag7 = lag(parks, 7)) %>%
-    mutate(transit_lag7 = lag(transit, 7)) %>%
-    mutate(workplaces_lag7 = lag(workplaces, 7)) %>%
-    mutate(residential_lag7 = lag(residential, 7)) %>%
-    mutate(global_lag7 = lag(global, 7)) %>%
-    mutate(retail_lag14 = lag(retail, 14)) %>% 
-    mutate(grocery_lag14 = lag(grocery, 14) ) %>% 
-    mutate(parks_lag14 = lag(parks, 14)) %>%
-    mutate(transit_lag14 = lag(transit, 14)) %>%
-    mutate(workplaces_lag14 = lag(workplaces, 14)) %>%
-    mutate(residential_lag14 = lag(residential, 14)) %>%
-    mutate(global_lag14 = lag(global, 14)) %>%
-    filter(date>=lock_start & date<=lock_end)
-  return(df)
-}
+# wave1
+wave1_lag0 <- mob %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter((Date >= as.Date('2020-03-17') & Date <= as.Date('2020-05-19'))) %>% 
+  mutate(Wave = 'Wave 1') %>% 
+  mutate(Period = 'Lockdown')
+
+wave1_lag7 <- mob %>% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %>% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %>% 
+  pivot_longer(!Date, names_to='mob') %>% 
+  separate(mob, c("Mobility", "Region")) %>% 
+  pivot_wider(names_from = Mobility, values_from = value) %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter((Date >= as.Date('2020-03-17') & Date <= as.Date('2020-05-19'))) %>% 
+  mutate(Wave = 'Wave 1') %>% 
+  mutate(Period = '7 days after lockdown')
+
+wave1_lag14 <- mob %>% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %>% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 14))) %>% 
+  pivot_longer(!Date, names_to='mob') %>% 
+  separate(mob, c("Mobility", "Region")) %>% 
+  pivot_wider(names_from = Mobility, values_from = value) %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter((Date >= as.Date('2020-03-17') & Date <= as.Date('2020-05-19'))) %>% 
+  mutate(Wave = 'Wave 1') %>% 
+  mutate(Period = '14 days after lockdown')
+
+# wave2
+wave2_lag0 <- mob %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter(Date >= as.Date('2020-12-26') &
+            ( (Region == 'Toronto' | Region=='Peel') | 
+                (Region =='York' & Date <= as.Date('2021-02-22')) |
+                (Region =='Durham' & Date <= as.Date('2021-02-16')) |
+                (Region =='Halton' & Date <= as.Date('2021-02-16')) ) 
+         ) %>% 
+  mutate(Wave = 'Wave 2') %>% 
+  mutate(Period = 'Lockdown')
+
+wave2_lag7 <- mob %>% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %>% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %>% 
+  pivot_longer(!Date, names_to='mob') %>% 
+  separate(mob, c("Mobility", "Region")) %>% 
+  pivot_wider(names_from = Mobility, values_from = value) %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter(Date >= as.Date('2020-12-26') &
+            ( (Region == 'Toronto' | Region=='Peel') | 
+                (Region =='York' & Date <= as.Date('2021-02-22')) |
+                (Region =='Durham' & Date <= as.Date('2021-02-16')) |
+                (Region =='Halton' & Date <= as.Date('2021-02-16')) ) 
+         ) %>% 
+  mutate(Wave = 'Wave 2') %>% 
+  mutate(Period = '7 days after lockdown')
+
+wave2_lag14 <- mob %>% 
+  pivot_wider(names_from = Region, values_from = Retail:Global) %>% 
+  mutate(across(where(is.numeric), ~ dplyr::lag(., 7))) %>% 
+  pivot_longer(!Date, names_to='mob') %>% 
+  separate(mob, c("Mobility", "Region")) %>% 
+  pivot_wider(names_from = Mobility, values_from = value) %>% 
+  left_join(rt, by = c("Region", "Date")) %>% 
+  filter(Date >= as.Date('2020-12-26') &
+            ( (Region == 'Toronto' | Region=='Peel') | 
+                (Region =='York' & Date <= as.Date('2021-02-22')) |
+                (Region =='Durham' & Date <= as.Date('2021-02-16')) |
+                (Region =='Halton' & Date <= as.Date('2021-02-16')) ) 
+         ) %>% 
+  mutate(Wave = 'Wave 2') %>% 
+  mutate(Period = '14 days after lockdown')
 ```
-
-## Function to get correlation data
-Input: Df of specific region, desired mobility lag time (0, 7, or 14 days)  
-Output: Df of specific region with list of correlations for each mobility
-```{r}
-get_correlations <- function(data, lag) {
-  if(lag==0) {
-    retail <- cor.test(data$Rt, data$retail, method = 'pearson')
-    grocery <- cor.test(data$Rt, data$grocery, method = 'pearson')
-    parks <- cor.test(data$Rt, data$parks, method = 'pearson')
-    transit <- cor.test(data$Rt, data$transit, method = 'pearson')
-    workplaces <- cor.test(data$Rt, data$workplaces, method = 'pearson')
-    residential <- cor.test(data$Rt, data$residential, method = 'pearson')
-    global <- cor.test(data$Rt, data$global, method = 'pearson')
-  } else if(lag==7) {
-    retail <- cor.test(data$Rt, data$retail_lag7, method = 'pearson')
-    grocery <- cor.test(data$Rt, data$grocery_lag7, method = 'pearson')
-    parks <- cor.test(data$Rt, data$parks_lag7, method = 'pearson')
-    transit <- cor.test(data$Rt, data$transit_lag7, method = 'pearson')
-    workplaces <- cor.test(data$Rt, data$workplaces_lag7, method = 'pearson')
-    residential <- cor.test(data$Rt, data$residential_lag7, method = 'pearson')
-    global <- cor.test(data$Rt, data$global_lag7, method = 'pearson')
-  } else if(lag==14) {
-    retail <- cor.test(data$Rt, data$retail_lag14, method = 'pearson')
-    grocery <- cor.test(data$Rt, data$grocery_lag14, method = 'pearson')
-    parks <- cor.test(data$Rt, data$parks_lag14, method = 'pearson')
-    transit <- cor.test(data$Rt, data$transit_lag14, method = 'pearson')
-    workplaces <- cor.test(data$Rt, data$workplaces_lag14, method = 'pearson')
-    residential <- cor.test(data$Rt, data$residential_lag14, method = 'pearson')
-    global <- cor.test(data$Rt, data$global_lag14, method = 'pearson')
-  } else {
-    stop('Must enter 0, 7, or 14')
-  }
-
-  return(list(Retail=retail, Grocery=grocery, Parks=parks, Transit=transit, Workplaces=workplaces, Residential=residential, Global=global))
-}
-```
-
-## Function to get correlation coefficient
-Input: List of region df's each containing coefficient info  
-Output: Coefficient data df of specified lag time
-```{r}
-corr_coef <- function(data) {
-  place <- numeric(length=35)
-  mobility <- numeric(length=35)
-  coefficient <- numeric(length=35)
-  p_val <- numeric(length=35)
-  i=1
-  j=1
-  k=1
-  for(loc in data){
-    for(corr in loc) {
-      place[i] <- names(data)[j]
-      mobility[i] <- names(loc)[k]
-      coefficient[i] <- corr$estimate[[1]]
-      p_val[i] <- corr$p.value
-      i=i+1
-      k=k+1
-    }
-    j=j+1
-    k=1
-  }
-  df <- data.frame(place, mobility, coefficient, p_val)
-  return(df)
-}
-```
-
-## Function to get regression data
-Input: Df of specific region, desired mobility lag time (0, 7, or 14 days)  
-Output: Df of specific region with list of regressions for each mobility
-```{r}
-get_regressions <- function(data, lag) {
-  if(lag==0) {
-    retail <- lm(Rt ~ retail, data = data)
-    grocery <- lm(Rt ~ grocery, data = data)
-    parks <- lm(Rt ~ parks, data = data)
-    transit <- lm(Rt ~ transit, data = data)
-    workplaces <- lm(Rt ~ workplaces, data = data)
-    residential <- lm(Rt ~ residential, data = data)
-    global <- lm(Rt ~ global, data = data)
-  } else if(lag==7) {
-    retail <- lm(Rt ~ retail_lag7, data = data)
-    grocery <- lm(Rt ~ grocery_lag7, data = data)
-    parks <- lm(Rt ~ parks_lag7, data = data)
-    transit <- lm(Rt ~ transit_lag7, data = data)
-    workplaces <- lm(Rt ~ workplaces_lag7, data = data)
-    residential <- lm(Rt ~ residential_lag7, data = data)
-    global <- lm(Rt ~ global_lag7, data = data)
-  } else if(lag==14) {
-    retail <- lm(Rt ~ retail_lag14, data = data)
-    grocery <- lm(Rt ~ grocery_lag14, data = data)
-    parks <- lm(Rt ~ parks_lag14, data = data)
-    transit <- lm(Rt ~ transit_lag14, data = data)
-    workplaces <- lm(Rt ~ workplaces_lag14, data = data)
-    residential <- lm(Rt ~ residential_lag14, data = data)
-    global <- lm(Rt ~ global_lag14, data = data)
-  } else {
-    stop('Must enter 0, 7, or 14')
-  }
-  return(list(Retail=retail, Grocery=grocery, Parks=parks, Transit=transit, Workplaces=workplaces, Residential=residential, Global=global))
-}
-```
-
-## Function to get regression coefficient
-Input: List of region df's each containing regression info  
-Output: Coefficient data df of specified lag time
-```{r}
-reg_coef <- function(data) {
-  place <- numeric(length=35)
-  mobility<- numeric(length=35)
-  coefficient <- numeric(length=35)
-  r2 <- numeric(length=35)
-  p_val <- numeric(length=35)
-  i=1
-  j=1
-  k=1
-  for(loc in data){
-    for(reg in loc) {
-      place[i] <- names(data)[j]
-      mobility[i] <- names(loc)[k]
-      coefficient[i] <- tidy(reg)[[2,2]]
-      r2[i] <- glance(reg)[[1,2]]
-      p_val[i] <- glance(reg)[[1,5]]
-      i=i+1
-      k=k+1
-    }
-    j=j+1
-    k=1
-  }
-  df <- data.frame(place, mobility, coefficient, r2, p_val)
-  return(df)
-}
-```
-
-## Pipeline
-Columns to keep
-```{r}
-COLS <- c('sub_region_1', 'date', 'retail_and_recreation_percent_change_from_baseline','grocery_and_pharmacy_percent_change_from_baseline', 'parks_percent_change_from_baseline', 'transit_stations_percent_change_from_baseline', 'workplaces_percent_change_from_baseline', 'residential_percent_change_from_baseline', 'Global Mobility Score', 'Rt')
-```
-
-Get data
-```{r}
-# Wave 1
-d <- get_data(d_mob, d_rt, '2020-03-17', '2020-05-19', COLS)
-p <- get_data(p_mob, p_rt, '2020-03-17', '2020-05-19', COLS)
-t <- get_data(t_mob, t_rt, '2020-03-17', '2020-05-19', COLS)
-h <- get_data(h_mob, h_rt, '2020-03-17', '2020-05-19', COLS)
-y <- get_data(y_mob, y_rt, '2020-03-17', '2020-05-19', COLS)
-
-# Wave 2
-d2 <- get_data(d_mob, d_rt, '2020-12-26', '2021-02-16', COLS)
-p2 <- get_data(p_mob, p_rt, '2020-12-26', '2021-03-19', COLS)
-t2 <- get_data(t_mob, t_rt, '2020-12-26', '2021-03-19', COLS)
-h2 <- get_data(h_mob, h_rt, '2020-12-26', '2021-02-16', COLS)
-y2 <- get_data(y_mob, y_rt, '2020-12-26', '2021-02-22', COLS)
-```
-
-0 day lag
-```{r}
-# Wave 1
-zero_corr <- list(
-  durham=get_correlations(d, 0),
-  peel=get_correlations(p, 0),
-  toronto=get_correlations(t, 0),
-  halton=get_correlations(h, 0),
-  york=get_correlations(y, 0)
-)
-zero_reg <- list(
-  durham=get_regressions(d, 0),
-  peel=get_regressions(p, 0),
-  toronto=get_regressions(t, 0),
-  halton=get_regressions(h, 0),
-  york=get_regressions(y, 0)
-)
-
-# Wave 2
-zero_corr2 <- list(
-  durham=get_correlations(d2, 0),
-  peel=get_correlations(p2, 0),
-  toronto=get_correlations(t2, 0),
-  halton=get_correlations(h2, 0),
-  york=get_correlations(y2, 0)
-)
-zero_reg2 <- list(
-  durham=get_regressions(d2, 0),
-  peel=get_regressions(p2, 0),
-  toronto=get_regressions(t2, 0),
-  halton=get_regressions(h2, 0),
-  york=get_regressions(y2, 0)
-)
-```
-
-7 day lag
-```{r}
-# Wave 1
-seven_corr <- list(
-  durham=get_correlations(d, 7),
-  peel=get_correlations(p, 7),
-  toronto=get_correlations(t, 7),
-  halton=get_correlations(h, 7),
-  york=get_correlations(y, 7)
-)
-seven_reg <- list(
-  durham=get_regressions(d, 7),
-  peel=get_regressions(p, 7),
-  toronto=get_regressions(t, 7),
-  halton=get_regressions(h, 7),
-  york=get_regressions(y, 7)
-)
-
-# Wave 2
-seven_corr2 <- list(
-  durham=get_correlations(d2, 7),
-  peel=get_correlations(p2, 7),
-  toronto=get_correlations(t2, 7),
-  halton=get_correlations(h2, 7),
-  york=get_correlations(y2, 7)
-)
-seven_reg2 <- list(
-  durham=get_regressions(d2, 7),
-  peel=get_regressions(p2, 7),
-  toronto=get_regressions(t2, 7),
-  halton=get_regressions(h2, 7),
-  york=get_regressions(y2, 7)
-)
-```
-
-14 day lag
-```{r}
-fourteen_corr <- list(
-  durham = get_correlations(d, 14),
-  peel = get_correlations(p, 14),
-  toronto = get_correlations(t, 14),
-  halton = get_correlations(h, 14),
-  york = get_correlations(y, 14)
-)
-fourteen_reg <- list(
-  durham = get_regressions(d, 14),
-  peel = get_regressions(p, 14),
-  toronto = get_regressions(t, 14),
-  halton = get_regressions(h, 14),
-  york = get_regressions(y, 14)
-)
-fourteen_corr2 <- list(
-  durham = get_correlations(d2, 14),
-  peel = get_correlations(p2, 14),
-  toronto = get_correlations(t2, 14),
-  halton = get_correlations(h2, 14),
-  york = get_correlations(y2, 14)
-)
-fourteen_reg2 <- list(
-  durham = get_regressions(d2, 14),
-  peel = get_regressions(p2, 14),
-  toronto = get_regressions(t2, 14),
-  halton = get_regressions(h2, 14),
-  york = get_regressions(y2, 14)
-)
-```
-
-Get coefficient data for each time lag
-Add period column, later factor it appropriately
-Combine into one df (total)
-Check if each p-value is statistically significant (<0.01)
-```{r}
-# Wave 1
-zero_corr_coef <- corr_coef(zero_corr)
-zero_corr_coef$period <- rep('Lockdown', times=35)
-
-seven_corr_coef <- corr_coef(seven_corr)
-seven_corr_coef$period <- rep('7 Days after lockdown', times=35)
-
-fourteen_corr_coef <- corr_coef(fourteen_corr)
-fourteen_corr_coef$period <- rep('14 Days after lockdown', times=35)
-
-total_corr <- rbind(zero_corr_coef, seven_corr_coef, fourteen_corr_coef)
-total_corr$wave <- rep('Wave 1', times=105)
-
-# Wave 2
-zero_corr_coef2 <- corr_coef(zero_corr2)
-zero_corr_coef2$period <- rep('Lockdown', times=35)
-
-seven_corr_coef2 <- corr_coef(seven_corr2)
-seven_corr_coef2$period <- rep('7 Days after lockdown', times=35)
-
-fourteen_corr_coef2 <- corr_coef(fourteen_corr2)
-fourteen_corr_coef2$period <- rep('14 Days after lockdown', times=35)
-
-total_corr2 <- rbind(zero_corr_coef2, seven_corr_coef2, fourteen_corr_coef2)
-total_corr2$wave <- rep('Wave 2', times=105)
-
-# Combine
-total_correlation <- rbind(total_corr, total_corr2)
-
-total_correlation$period <- factor(total_correlation$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
-total_correlation <- total_correlation %>%
-  mutate(
-    `Significant (p<0.01)` = case_when(
-      p_val < 0.01 ~ 'Yes',
-      p_val >= 0.01 ~ 'No'
-    )
-  )
-
-write_csv(total_correlation, 'data/corr_coef.csv')
-```
-
-Get coefficient data for each time lag
-Add period column, later factor it appropriately
-Combine into one df (total)
-Check if each p-value is statistically significant (<0.01)
-```{r}
-# Wave 1
-zero_reg_coef <- reg_coef(zero_reg)
-zero_reg_coef$period <- rep('Lockdown', times=35)
-
-seven_reg_coef <- reg_coef(seven_reg)
-seven_reg_coef$period <- rep('7 Days after lockdown', times=35)
-
-fourteen_reg_coef <- reg_coef(fourteen_reg)
-fourteen_reg_coef$period <- rep('14 Days after lockdown', times=35)
-
-total_reg <- rbind(zero_reg_coef, seven_reg_coef, fourteen_reg_coef)
-total_reg$wave <- rep('Wave 1', times=105)
-
-# Wave 2
-zero_reg_coef2 <- reg_coef(zero_reg2)
-zero_reg_coef2$period <- rep('Lockdown', times=35)
-
-seven_reg_coef2 <- reg_coef(seven_reg2)
-seven_reg_coef2$period <- rep('7 Days after lockdown', times=35)
-
-fourteen_reg_coef2 <- reg_coef(fourteen_reg2)
-fourteen_reg_coef2$period <- rep('14 Days after lockdown', times=35)
-
-total_reg2 <- rbind(zero_reg_coef2, seven_reg_coef2, fourteen_reg_coef2)
-total_reg2$wave <- rep('Wave 2', times=105)
-
-# Combine
-total_regression <- rbind(total_reg, total_reg2)
-
-total_regression$period <- factor(total_regression$period, levels=c('Lockdown', '7 Days after lockdown', '14 Days after lockdown'))
-total_regression <- total_regression %>%
-  mutate(
-    `Significant (p<0.01)` = case_when(
-      p_val < 0.01 ~ 'Yes',
-      p_val >= 0.01 ~ 'No'
-    )
-  )
-
-write_csv(total_regression, 'data/reg_coef.csv')
-```
-
-## Barplot
-```{r}
-col <- c('Grocery'='red', 'Parks'='blue', 'Residential'='cyan', 'Retail'='darkgreen', 'Transit'='pink', 'Workplaces'='seagreen1', 'Global'='brown')
-
-p <- ggplot(total_regression, aes(x=place, y=coefficient, fill=fct_relevel(mobility, "Global", after = Inf))) +
-  geom_col(position = 'dodge') +
-  geom_vline(xintercept = c(1.5, 2.5, 3.5, 4.5)) +
-  scale_fill_manual(values=col, 
-                    name='Mobility type') +
-  scale_x_discrete(labels = c('Durham', 'Halton', 'Peel', 'Toronto', 'York')) +
-  facet_grid(rows=vars(period), cols=vars(wave)) +
-  xlab('Public Health Unit') +
-  ylab('Regression coefficient') +
-  theme_bw()
-ggsave('graphs/reg_barplot.png',
-       p,
-       height = 8.5,
-       width = 11,
-       units = 'in')
-p
-```
-Regression coefficients of each type of mobility with Rt as the dependent variable. A simple way to grasp regression coefficients is to picture them as linear slopes. There is a strong, positive association between almost each type of mobility score and Rt during the periods 7 days after lockdown and 14 days after lockdown. Most of the time, when mobility score is high, Rt is also high.The exception is residential mobility; there is a strong, negative association between residential mobility score and Rt during the periods 7 days after lockdown and 14 days after lockdown. When residential mobility score is high, Rt is low. This suggests that there is a lag time before changes in global mobility score are reflected in Rt values.
-
-
-## Lineplot
-```{r}
-d <- filter(total_correlation, mobility=='Global')
-p <- ggplot(d, aes(x=period, y=coefficient, group=place, color=place)) +
-  geom_point(d, mapping=aes(shape=`Significant (p<0.01)`), size=3) +
-  geom_line(linetype='dashed') +
-  scale_color_brewer(palette = 'Set1',
-                     name = 'Public Health Unit',
-                     breaks=c('durham', 'halton', 'peel', 'toronto', 'york'),
-                     labels=c('Durham', 'Halton', 'Peel', 'Toronto', 'York')) +
-  facet_grid(cols=vars(wave)) +
-  xlab('Period') +
-  ylab('Correlation coefficient') +
-  theme_bw()
-ggsave('graphs/corr_lag_lineplot.png',
-       p,
-       height = 8.5,
-       width = 11,
-       units = 'in')
-p
-```
-Correlation coefficients between Rt and global mobility score. There is usually a strong, positive correlation between global mobility score and Rt during the periods 7 days after lockdown and 14 days after lockdown. When mobility score is high, Rt is also high. This also suggests that there is a lag time before changes in global mobility score are reflected in Rt values.
-
-Correlation coefficient formulas are used to find how strong a relationship is between data. The formulas return a value between -1 and 1, where:
-
-1 indicates a strong positive relationship.
--1 indicates a strong negative relationship.
-A result of zero indicates no relationship at all.
 
 ```{r}
-d <- filter(total_correlation, mobility=='Global')
-p <- ggplot(d, aes(x=place, y=coefficient, group=period, color=period)) +
-  geom_point(d, mapping=aes(shape=`Significant (p<0.01)`), size=3) +
-  geom_line() +
-  scale_color_discrete(name = "Period") +
-  scale_x_discrete(labels = c('Durham', 'Halton', 'Peel', 'Toronto', 'York')) +
-  facet_grid(cols=vars(wave)) +
-  xlab('Public Health Unit') +
-  ylab('Correlation coefficient') +
-  theme_bw()
-ggsave('graphs/corr_region_lineplot.png',
-       p,
-       height = 8.5,
-       width = 11,
-       units = 'in')
-p
+dfs <- list(wave1_lag0, wave1_lag7, wave1_lag14, wave2_lag0, wave2_lag7, wave2_lag14)
+regions <- unique(timeline$Region)
 ```
 
+
+```{r}
+# for (df in dfs){
+#   for (region in regions) {
+#     data <- df %>% filter(Region == region)
+#     retail <- plm(Rt ~ Retail,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     grocery <- plm(Rt ~ Grocery,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     parks <- plm(Rt ~ Parks,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     transit <- plm(Rt ~ Transit,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     workplaces <- plm(Rt ~ Workplaces,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     residential <- plm(Rt ~ Residential,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     global <- plm(Rt ~ Global,
+#                   data = data,
+#                   index = 'Date',
+#                   model = 'within')
+#     
+#   }
+# }
+
+```
+
+```{r}
+data <- wave1_lag14 %>% filter(Region == 'Durham')
+
+test <- plm(Rt ~ Global,
+    data = data,
+    index = 'Date',
+    model = 'within')
+
+summary(test)
+```
+
+```{r}
+lm(formula = Rt ~ Global + Date - 1, data = data)
+```
+
+```{r}
+cor.test(formula = Rt ~ Global + Date - 1, data = data)
+```
 
