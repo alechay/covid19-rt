@@ -57,15 +57,15 @@ halton <- rt_data %>%
 ## Calculate Rt
 ```{r}
 tr <- estimate_R(toronto, method = 'parametric_si',
-           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+           config = make_config(list(mean_si = 5.29, std_si = 5.32)))
 pr <- estimate_R(peel, method = 'parametric_si',
-           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+           config = make_config(list(mean_si = 5.29, std_si = 5.32)))
 yr <- estimate_R(york, method = 'parametric_si',
-           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+           config = make_config(list(mean_si = 5.29, std_si = 5.32)))
 dr <- estimate_R(durham, method = 'parametric_si',
-           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+           config = make_config(list(mean_si = 5.29, std_si = 5.32)))
 hr <- estimate_R(halton, method = 'parametric_si',
-           config = make_config(list(mean_si = 5.2, std_si = 5.1)))
+           config = make_config(list(mean_si = 5.29, std_si = 5.32)))
 ```
 
 ## Toronto

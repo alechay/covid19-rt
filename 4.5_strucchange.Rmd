@@ -1,0 +1,115 @@
+---
+title: "Strucchange Segmentation"
+output: html_document
+---
+
+## Load packages
+```{r, warning=F, message=F}
+library(tidyverse)
+library(readxl)
+library(strucchange)
+```
+
+## Read data
+```{r}
+# Restriction data
+timeline <- read_excel('data/restrictions.xlsx') %>% 
+  mutate(Date_start = as.Date(Date_start)) %>% 
+  mutate(Date_end = as.Date(Date_end)) %>% 
+  pivot_longer(cols = Toronto:Halton, names_to = 'Region', values_to = 'Restrictions') %>% 
+  mutate(Restrictions = factor(Restrictions, 
+                               levels = c("Enhanced lockdown", "Lockdown/Stage 1", "Red/Stage 2/Modified Stage 2", "Green/Stage 3", "Orange/Gathering limits")))
+
+# Rt data
+rt <- read_csv('estR/estR.csv') %>% 
+  select(`Mean(R)`, date_start, Region) %>% 
+  pivot_wider(names_from = Region, values_from = `Mean(R)`) %>% 
+  rename(Date=date_start)
+```
+
+## Timeline
+```{r}
+Durham <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-11-23', '2020-12-26', '2021-02-16'))
+Halton <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-12-26', '2021-02-16'))
+Peel <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+Toronto <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+York <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-10-19', '2020-11-07', '2020-11-16', '2020-12-14', '2020-12-26', '2021-02-22'))
+
+breakpoints <- timeline %>% 
+  filter((Region == 'Durham' & Date_start %in% Durham) |
+         (Region == 'Halton' & Date_start %in% Halton) |
+         (Region == 'Peel' & Date_start %in% Peel) |
+         (Region == 'Toronto' & Date_start %in% Toronto) |
+         (Region == 'York' & Date_start %in% York))
+```
+
+```{r}
+Durham <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-11-23', '2020-12-26', '2021-02-16'))
+Halton <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-12-26', '2021-02-16'))
+Peel <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+Toronto <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+York <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-10-19', '2020-11-07', '2020-11-16', '2020-12-14', '2020-12-26', '2021-02-22'))
+
+breakpoints <- timeline %>% 
+  filter((Region == 'Durham' & Date_start %in% Durham) |
+         (Region == 'Halton' & Date_start %in% Halton) |
+         (Region == 'Peel' & Date_start %in% Peel) |
+         (Region == 'Toronto' & Date_start %in% Toronto) |
+         (Region == 'York' & Date_start %in% York))
+```
+
+## Strucchange breakpoints
+```{r}
+tor <- rt$Toronto
+l <- length(tor)
+tt <- 1:l
+trend_fit <- lm(tor ~ tt)
+summary(trend_fit)
+```
+
+```{r}
+plot(tor)
+```
+
+```{r}
+tor_brk <- breakpoints(tor ~ tt, h = 5)
+summary(tor_brk)
+```
+
+```{r}
+plot(tor_brk)
+```
+
+```{r}
+tl <- timeline %>% 
+  filter(Region == 'Toronto')
+lines <- breakpoints %>% 
+  filter(Region == 'Toronto')
+
+rt$tor_brk <- fitted(tor_brk, breaks=7)
+ci <- confint(tor_brk, breaks = 7)
+day_num <- as.numeric(ci$confint[,2])
+breaks <- as.Date(day_num, origin=as.Date('2020-03-17'))
+
+fill <- c("Enhanced lockdown"='gray33', "Lockdown/Stage 1"='gray66', "Red/Stage 2/Modified Stage 2"='red', "Green/Stage 3"='green', "Orange/Gathering limits"='orange')
+
+p <- ggplot(rt) +
+  geom_line(mapping=aes(x=Date, y=Toronto)) +
+  geom_line(mapping=aes(x=Date, y=tor_brk), color='blue') +
+  # geom_vline(xintercept = breaks, linetype = 'dashed', color='blue') +
+  geom_rect(tl, 
+            mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+            ymin=-Inf, ymax=Inf, alpha=0.3) +
+  # geom_vline(lines,
+  #            mapping = aes(xintercept=Date_start),
+  #            linetype = 'dashed') +
+  scale_fill_manual(values=fill) +
+  scale_x_date(date_breaks = "1 month") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+
+ggsave('graphs/test.png', p, height = 8.5, width = 11, units = 'in')
+
+p
+```
+

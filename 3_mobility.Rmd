@@ -124,4 +124,3 @@ ggsave('graphs/mobility.png', mobility, height = 8.5, width = 11, units = 'in')
 
 mobility
 ```
-

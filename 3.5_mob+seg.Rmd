@@ -1,0 +1,246 @@
+---
+title: "Mobility + Segmentation"
+output: html_notebook
+---
+
+## Load packages
+```{r}
+library(tidyverse)
+library(zoo) # for rolling averages
+library(readxl)
+library(segmented)
+library(ggpubr)
+```
+
+## Read data
+```{r}
+# Restriction data
+timeline <- read_excel('data/restrictions.xlsx') %>% 
+  mutate(Date_start = as.Date(Date_start)) %>% 
+  mutate(Date_end = as.Date(Date_end)) %>% 
+  pivot_longer(cols = Toronto:Halton, names_to = 'Region', values_to = 'Restrictions') %>% 
+  mutate(Restrictions = factor(Restrictions, 
+                               levels = c("Enhanced lockdown", "Lockdown/Stage 1", "Red/Stage 2/Modified Stage 2", "Green/Stage 3", "Orange/Gathering limits")))
+
+# Mobility data
+regions = c('Regional Municipality of Durham', 'Regional Municipality of Halton', 'Regional Municipality of Peel', 'Toronto Division', 'Regional Municipality of York')
+mob <- read_csv('data/2020_CA_Region_Mobility_Report.csv') %>% 
+  rename(Retail=retail_and_recreation_percent_change_from_baseline,
+         Grocery=grocery_and_pharmacy_percent_change_from_baseline,
+         Parks=parks_percent_change_from_baseline,
+         Transit=transit_stations_percent_change_from_baseline,
+         Workplaces=workplaces_percent_change_from_baseline,
+         Residential=residential_percent_change_from_baseline) %>% 
+  select(sub_region_2, date, 
+         Retail, Grocery, Parks, Transit, Workplaces, Residential) %>% 
+  filter(sub_region_2 %in% regions) %>% 
+  mutate(Global = (Retail + Grocery + Parks + Transit + Workplaces + Residential)/6)%>%
+  rename(Region=sub_region_2, Date=date) %>% 
+  mutate(Region = case_when(Region == 'Regional Municipality of Durham' ~ 'Durham',
+                            Region == 'Regional Municipality of Halton' ~ 'Halton',
+                            Region == 'Regional Municipality of Peel' ~ 'Peel',
+                            Region == 'Toronto Division' ~ 'Toronto',
+                            Region == 'Regional Municipality of York' ~ 'York'))
+
+# Rt data
+rt <- read_csv('estR/estR.csv') %>% 
+  select(`Mean(R)`, date_start, Region) %>% 
+  pivot_wider(names_from = Region, values_from = `Mean(R)`) %>% 
+  rename(Date=date_start)
+```
+
+## Roll mean and tidy data
+```{r}
+tidy_mob <- mob %>% 
+  pivot_longer(cols = Retail:Global, 
+               names_to = 'Mobility type', values_to = 'Mobility change (%)')
+
+rollmean <- mob %>% 
+  mutate(across(where(is.numeric), ~ rollmean(., k = 7, fill = NA))) %>% 
+  pivot_longer(cols = Retail:Global, 
+               names_to = 'Mobility type', values_to = 'Mobility change (%)')
+
+tidy_rt <- rt %>% 
+  pivot_longer(cols = Toronto:Halton,
+               names_to = 'Region', values_to = 'Rt')
+```
+
+## Timeline
+```{r}
+Durham <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-11-23', '2020-12-26', '2021-02-16'))
+Halton <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-11-16', '2020-12-26', '2021-02-16'))
+Peel <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+Toronto <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-24', '2020-07-31', '2020-09-18', '2020-10-10', '2020-11-23', '2020-12-26', '2021-03-19'))
+York <- as.Date(c('2020-03-17', '2020-05-19', '2020-06-19', '2020-07-24', '2020-10-19', '2020-11-07', '2020-11-16', '2020-12-14', '2020-12-26', '2021-02-22'))
+
+breakpoints <- timeline %>% 
+  filter((Region == 'Durham' & Date_start %in% Durham) |
+         (Region == 'Halton' & Date_start %in% Halton) |
+         (Region == 'Peel' & Date_start %in% Peel) |
+         (Region == 'Toronto' & Date_start %in% Toronto) |
+         (Region == 'York' & Date_start %in% York))
+```
+
+## Get segs function
+```{r}
+get_segs <- function (nbreaks) {
+  
+  ### Get breakpoints ###
+  x <- tidy_rt %>% filter(Region=='Toronto')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  my.fitted <- fitted(my.seg)
+  tor <- as.numeric(my.seg$psi[, 2])
+  tor <- data.frame(Region = rep('Toronto', times=nbreaks), bp = tor)
+  
+  x <- tidy_rt %>% filter(Region=='Peel')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  peel <- as.numeric(my.seg$psi[, 2])
+  peel <- data.frame(Region = rep('Peel', times=nbreaks), bp = peel)
+  
+  x <- tidy_rt %>% filter(Region=='York')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  york <- as.numeric(my.seg$psi[, 2])
+  york <- data.frame(Region = rep('York', times=nbreaks), bp = york)
+  
+  x <- tidy_rt %>% filter(Region=='Durham')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  dur <- as.numeric(my.seg$psi[, 2])
+  dur <- data.frame(Region = rep('Durham', times=nbreaks), bp = dur)
+  
+  x <- tidy_rt %>% filter(Region=='Halton')
+  my.lm <- lm(Rt ~ Date, data = x)
+  # make segmented regression
+  my.seg <- segmented(my.lm,
+                      seg.Z = ~ Date,
+                      npsi = nbreaks)
+  hal <- as.numeric(my.seg$psi[, 2])
+  hal <- data.frame(Region = rep('Halton', times=nbreaks), bp = hal)
+  
+  bp <- rbind(tor, peel, york, dur, hal)
+  
+  ### Get segmented regressions
+  segs <- rt %>% 
+  mutate(across(where(is.numeric), ~ fitted(
+    segmented(lm(. ~ Date),
+              seg.Z = ~ Date,
+              npsi = nbreaks)
+    ))) %>% 
+  pivot_longer(cols = Toronto:Halton,
+               names_to = 'Region', values_to = 'Rt')
+  
+  return(list(segs=segs, bp=bp))
+}
+```
+
+## Get graphs function 
+```{r}
+get_graph <- function(region) {
+  
+  ### Get region specific data
+  # Mobility plot
+  mob_data <- tidy_mob %>% 
+    filter(`Mobility type` == 'Global' & Region ==region)
+  roll <- rollmean %>% 
+    filter(`Mobility type` == 'Global' & Region ==region)
+  tl <- timeline %>% 
+    filter(Region == region)
+  lines <- breakpoints %>% 
+    filter(Region ==region)
+  
+  # Rt plot
+  rt_data <- tidy_rt %>% 
+    filter(Region ==region)
+  segs <- res$segs %>% 
+    filter(Region == region)
+  bp <- res$bp %>% 
+    filter(Region == region)
+  
+  ### Make plots
+    fill <- c("Enhanced lockdown"='gray33', "Lockdown/Stage 1"='gray66', "Red/Stage 2/Modified Stage 2"='red', "Green/Stage 3"='green', "Orange/Gathering limits"='orange')
+  
+  # Mobility plot
+  tor_mob <- ggplot() +
+    geom_line(mob_data,
+              mapping = aes(x=Date,y=`Mobility change (%)`)) +
+    geom_line(roll,
+              mapping = aes(x=Date,y=`Mobility change (%)`),
+              color = 'blue') +
+    geom_rect(tl, 
+              mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+              ymin=-Inf, ymax=Inf, alpha=0.3) +
+    geom_vline(lines,
+               mapping = aes(xintercept=Date_start),
+               linetype = 'dashed') +
+    ylab('Global mobility change (%)') +
+    scale_fill_manual(values=fill) +
+    scale_x_date(date_breaks = "1 month") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust=1))
+  
+  # Segmented plot 
+  tor_seg <- ggplot() +
+    geom_line(rt_data,
+              mapping = aes(x=Date,y=Rt)) +
+    geom_line(segs,
+              mapping = aes(x=Date, y=Rt),
+              color='blue') +
+    geom_rect(tl, 
+              mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+              ymin=-Inf, ymax=Inf, alpha=0.3) +
+    geom_vline(lines,
+               mapping = aes(xintercept=Date_start),
+               linetype = 'dashed') +
+    geom_vline(bp,
+               mapping = aes(xintercept = bp),
+               color = 'blue') +
+    scale_fill_manual(values=fill) +
+    scale_x_date(date_breaks = "1 month") +
+    theme_bw() +
+    theme(axis.title.x=element_blank(),
+          axis.text.x = element_text(angle = 45, hjust=1))
+  
+  # Combine into one plot
+  comb <- ggarrange(tor_seg, tor_mob, ncol = 1, legend='right', common.legend = TRUE)
+  comb <- annotate_figure(comb, top = text_grob(region, color = "black", face = "bold", size=18))
+  filename = paste('graphs/mob+seg_', region, '.png', sep='')
+  
+  ggsave(filename, comb, height = 8.5, width = 11, units = 'in')
+  
+  return(comb)
+}
+```
+
+## Get segments for regions
+```{r}
+res <- get_segs(2)
+```
+
+```{r}
+get_graph('Durham')
+```
+
+
+## Get graphs for all regions
+```{r}
+reg <- c('Durham', 'Halton', 'Peel', 'Toronto', 'York')
+for (r in reg) {
+  get_graph(r)
+}
+```
+
