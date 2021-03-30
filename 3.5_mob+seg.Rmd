@@ -244,3 +244,99 @@ for (r in reg) {
 }
 ```
 
+```{r}
+get_graph2 <- function(region) {
+  
+  ### Get region specific data
+  # Mobility plot
+  mob_data <- tidy_mob %>% 
+    filter(`Mobility type` == 'Global' & Region ==region)
+  roll <- rollmean %>% 
+    filter(`Mobility type` == 'Global' & Region ==region)
+  tl <- timeline %>% 
+    filter(Region == region)
+  lines <- breakpoints %>% 
+    filter(Region ==region)
+  
+  # Rt plot
+  rt_data <- tidy_rt %>% 
+    filter(Region ==region)
+  segs <- res$segs %>% 
+    filter(Region == region)
+  bp <- res$bp %>% 
+    filter(Region == region)
+  
+  ### Make plots
+    fill <- c("Enhanced lockdown"='gray33', "Lockdown/Stage 1"='gray66', "Red/Stage 2/Modified Stage 2"='red', "Green/Stage 3"='green', "Orange/Gathering limits"='orange')
+  
+  # Mobility plot
+  tor_mob <- ggplot() +
+    geom_line(mob_data,
+              mapping = aes(x=Date,y=`Mobility change (%)`)) +
+    geom_line(roll,
+              mapping = aes(x=Date,y=`Mobility change (%)`),
+              color = 'blue') +
+    geom_rect(tl, 
+              mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+              ymin=-Inf, ymax=Inf, alpha=0.3) +
+    geom_vline(lines,
+               mapping = aes(xintercept=Date_start),
+               linetype = 'dashed') +
+    ylab('ΔGMI (%)') +
+    scale_fill_manual(values=fill) +
+    scale_x_date(date_breaks = "1 month") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust=1))
+  
+  # Segmented plot 
+  tor_seg <- ggplot() +
+    geom_line(rt_data,
+              mapping = aes(x=Date,y=Rt)) +
+    geom_line(segs,
+              mapping = aes(x=Date, y=Rt),
+              color='blue') +
+    geom_rect(tl, 
+              mapping=aes(xmin=Date_start, xmax=Date_end, fill=Restrictions),
+              ymin=-Inf, ymax=Inf, alpha=0.3) +
+    geom_vline(lines,
+               mapping = aes(xintercept=Date_start),
+               linetype = 'dashed') +
+    geom_vline(bp,
+               mapping = aes(xintercept = bp),
+               color = 'blue') +
+    scale_fill_manual(values=fill) +
+    scale_x_date(date_breaks = "1 month") +
+    theme_bw() +
+    theme(axis.title.x=element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+  
+  # get legend
+  leg <- get_legend(tor_mob)
+  l <- as_ggplot(leg)
+  
+  # Combine into one plot
+  comb <- ggarrange(tor_seg, tor_mob, ncol = 1, legend='none')
+  comb <- annotate_figure(comb, top = text_grob(region, color = "black", face = "bold", size=14))
+  
+  return(list(comb=comb, l=l))
+}
+```
+
+```{r}
+d <- get_graph2('Durham')$comb
+h <- get_graph2('Halton')$comb
+p <- get_graph2('Peel')$comb
+t <- get_graph2('Toronto')$comb
+y <- get_graph2('York')$comb
+l <- get_graph2('Durham')$l
+
+comb <- ggarrange(d, h, p, t, y, l, nrow = 3, ncol = 2)
+ggsave('graphs/mob+seg_combined.png', comb, height = 11, width = 8.5, units = 'in')
+```
+
+```{r}
+leg <- get_legend(d)
+as_ggplot(leg)
+```
+

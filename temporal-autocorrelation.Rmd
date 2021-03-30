@@ -1,0 +1,150 @@
+---
+title: "Temporal-autocorrelation"
+output: html_document
+---
+
+```{r}
+# library(ppcor) # partial correlations
+# library(nlme) # temporal autocorrelation, gls function
+# library(orcutt) # temporal autocorrelation
+# library(plm)
+```
+
+### GLS
+```{r}
+get_gls_regressions <- function(data, lag) {
+  if(lag==0) {
+    retail <- gls(Rt ~ retail, data = data,
+                  correlation = corAR1(form = ~date),
+                  method = 'ML')
+    grocery <- gls(Rt ~ grocery, data = data,
+                   correlation = corAR1(form = ~date),
+                   method = 'ML')
+    parks <- gls(Rt ~ parks, data = data,
+                 correlation = corAR1(form = ~date),
+                 method = 'ML')
+    transit <- gls(Rt ~ transit, data = data,
+                   correlation = corAR1(form = ~date),
+                   method = 'ML')
+    workplaces <- gls(Rt ~ workplaces, data = data,
+                      correlation = corAR1(form = ~date),
+                      method = 'ML')
+    residential <- gls(Rt ~ residential, data = data,
+                       correlation = corAR1(form = ~date),
+                       method = 'ML')
+    global <- gls(Rt ~ global, data = data,
+                  correlation = corAR1(form = ~date),
+                  method = 'ML')
+  } else if(lag==7) {
+    retail <- gls(Rt ~ retail_lag7, data = data,
+                  correlation = corAR1(form = ~date),
+                  method = 'ML')
+    grocery <- gls(Rt ~ grocery_lag7, data = data,
+                   correlation = corAR1(form = ~date),
+                   method = 'ML')
+    parks <- gls(Rt ~ parks_lag7, data = data,
+                 correlation = corAR1(form = ~date),
+                 method = 'ML')
+    transit <- gls(Rt ~ transit_lag7, data = data,
+                   correlation = corAR1(form = ~date),
+                   method = 'ML')
+    workplaces <- gls(Rt ~ workplaces_lag7, data = data,
+                      correlation = corAR1(form = ~date),
+                      method = 'ML')
+    residential <- gls(Rt ~ residential_lag7, data = data,
+                       correlation = corAR1(form = ~date),
+                       method = 'ML')
+    global <- gls(Rt ~ global_lag7, data = data,
+                  correlation = corAR1(form = ~date),
+                  method = 'ML')
+  } else if(lag==14) {
+    retail <- gls(Rt ~ retail_lag14, data = data,
+                  correlation = corAR1(form = ~date),
+                  method = 'ML')
+    grocery <- gls(Rt ~ grocery_lag14, data = data,
+                   correlation = corAR1(form = ~date),
+                   method = 'ML')
+    parks <- gls(Rt ~ parks_lag14, data = data,
+                 correlation = corAR1(form = ~date),
+                 method = 'ML')
+    transit <- gls(Rt ~ transit_lag14, data = data,
+                   correlation = corAR1(form = ~date),
+                   method = 'ML')
+    workplaces <- gls(Rt ~ workplaces_lag14, data = data,
+                      correlation = corAR1(form = ~date),
+                      method = 'ML')
+    residential <- gls(Rt ~ residential_lag14, data = data,
+                       correlation = corAR1(form = ~date),
+                       method = 'ML')
+    global <- gls(Rt ~ global_lag14, data = data,
+                  correlation = corAR1(form = ~date),
+                  method = 'ML')
+  } else {
+    stop('Must enter 0, 7, or 14')
+  }
+  return(list(Retail=retail, Grocery=grocery, Parks=parks, Transit=transit, Workplaces=workplaces, Residential=residential, Global=global))
+}
+```
+
+## GLS regressions
+Proof of concept
+```{r}
+# Fit model
+gls1 = gls(Rt ~ global_lag14, data = d)
+# explore residuals
+plot(resid(gls1, type = "normalized") ~
+       fitted(gls1))
+
+# Fit AR(1) model
+gls2 = gls(Rt ~ global_lag14, data = d,
+           correlation = corAR1(form = ~date),
+           method = 'ML')
+
+summary(gls2)
+
+# explore residuals
+plot(resid(gls2, type = "normalized") ~
+       fitted(gls2))
+```
+
+```{r}
+plot(resid(gls1, type = "normalized") ~
+       d$date)
+abline(h = 0, lty = 2)
+lines(resid(gls1, type = "normalized") ~
+        d$date)
+
+plot(resid(gls2, type = "normalized") ~
+       d$date)
+abline(h = 0, lty = 2)
+lines(resid(gls2, type = "normalized") ~
+        d$date)
+```
+
+```{r}
+acf(residuals(gls1, type = "normalized"),
+    lag = 40)
+
+acf(residuals(gls2, type = "normalized"),
+    lag = 40)
+```
+
+```{r}
+AIC(gls1, gls2)
+
+anova(gls1, gls2)
+```
+
+```{r}
+summary(gls1)
+
+summary(gls2)
+```
+
+```{r}
+regmodel <- lm(Rt ~ global_lag14, data = d)
+
+summary(regmodel)
+acf(residuals(regmodel))
+pacf(residuals(regmodel))
+```

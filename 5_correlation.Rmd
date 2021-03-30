@@ -5,7 +5,6 @@ output: html_notebook
 
 ## Load packages
 ```{r}
-library(ppcor)
 library(tidyverse)
 library(readxl)
 library(ggpubr)
@@ -76,29 +75,29 @@ Output: Df of specific region with list of correlations for each mobility
 ```{r}
 get_correlations <- function(data, lag) {
   if(lag==0) {
-    retail <- pcor.test(data$retail, data$Rt, as.numeric(data$date), method = 'pearson')
-    grocery <- pcor.test(data$grocery, data$Rt, as.numeric(data$date), method = 'pearson')
-    parks <- pcor.test(data$parks, data$Rt, as.numeric(data$date), method = 'pearson')
-    transit <- pcor.test(data$transit, data$Rt, as.numeric(data$date), method = 'pearson')
-    workplaces <- pcor.test(data$workplaces, data$Rt, as.numeric(data$date), method = 'pearson')
-    residential <- pcor.test(data$residential, data$Rt, as.numeric(data$date), method = 'pearson')
-    global <- pcor.test(data$global, data$Rt, as.numeric(data$date), method = 'pearson')
+    retail <- cor.test(data$retail, data$Rt, method = 'pearson')
+    grocery <- cor.test(data$grocery, data$Rt, method = 'pearson')
+    parks <- cor.test(data$parks, data$Rt, method = 'pearson')
+    transit <- cor.test(data$transit, data$Rt, method = 'pearson')
+    workplaces <- cor.test(data$workplaces, data$Rt, method = 'pearson')
+    residential <- cor.test(data$residential, data$Rt, method = 'pearson')
+    global <- cor.test(data$global, data$Rt, method = 'pearson')
   } else if(lag==7) {
-    retail <- pcor.test(data$retail_lag7, data$Rt, as.numeric(data$date), method = 'pearson')
-    grocery <- pcor.test(data$grocery_lag7, data$Rt, as.numeric(data$date), method = 'pearson')
-    parks <- pcor.test(data$parks_lag7, data$Rt, as.numeric(data$date), method = 'pearson')
-    transit <- pcor.test(data$transit_lag7, data$Rt, as.numeric(data$date), method = 'pearson')
-    workplaces <- pcor.test(data$workplaces_lag7, data$Rt, as.numeric(data$date), method = 'pearson')
-    residential <- pcor.test(data$residential_lag7, data$Rt, as.numeric(data$date), method = 'pearson')
-    global <- pcor.test(data$global_lag7, data$Rt, as.numeric(data$date), method = 'pearson')
+    retail <- cor.test(data$retail_lag7, data$Rt, method = 'pearson')
+    grocery <- cor.test(data$grocery_lag7, data$Rt, method = 'pearson')
+    parks <- cor.test(data$parks_lag7, data$Rt, method = 'pearson')
+    transit <- cor.test(data$transit_lag7, data$Rt, method = 'pearson')
+    workplaces <- cor.test(data$workplaces_lag7, data$Rt, method = 'pearson')
+    residential <- cor.test(data$residential_lag7, data$Rt, method = 'pearson')
+    global <- cor.test(data$global_lag7, data$Rt, method = 'pearson')
   } else if(lag==14) {
-    retail <- pcor.test(data$retail_lag14, data$Rt, as.numeric(data$date), method = 'pearson')
-    grocery <- pcor.test(data$grocery_lag14, data$Rt, as.numeric(data$date), method = 'pearson')
-    parks <- pcor.test(data$parks_lag14, data$Rt, as.numeric(data$date), method = 'pearson')
-    transit <- pcor.test(data$transit_lag14, data$Rt, as.numeric(data$date), method = 'pearson')
-    workplaces <- pcor.test(data$workplaces_lag14, data$Rt, as.numeric(data$date), method = 'pearson')
-    residential <- pcor.test(data$residential_lag14, data$Rt, as.numeric(data$date), method = 'pearson')
-    global <- pcor.test(data$global_lag14, data$Rt, as.numeric(data$date), method = 'pearson')
+    retail <- cor.test(data$retail_lag14, data$Rt, method = 'pearson')
+    grocery <- cor.test(data$grocery_lag14, data$Rt, method = 'pearson')
+    parks <- cor.test(data$parks_lag14, data$Rt, method = 'pearson')
+    transit <- cor.test(data$transit_lag14, data$Rt, method = 'pearson')
+    workplaces <- cor.test(data$workplaces_lag14, data$Rt, method = 'pearson')
+    residential <- cor.test(data$residential_lag14, data$Rt, method = 'pearson')
+    global <- cor.test(data$global_lag14, data$Rt, method = 'pearson')
   } else {
     stop('Must enter 0, 7, or 14')
   }
@@ -142,29 +141,29 @@ Output: Df of specific region with list of regressions for each mobility
 ```{r}
 get_regressions <- function(data, lag) {
   if(lag==0) {
-    retail <- lm(Rt ~ retail + date, data = data)
-    grocery <- lm(Rt ~ grocery + date, data = data)
-    parks <- lm(Rt ~ parks + date, data = data)
-    transit <- lm(Rt ~ transit + date, data = data)
-    workplaces <- lm(Rt ~ workplaces + date, data = data)
-    residential <- lm(Rt ~ residential + date, data = data)
-    global <- lm(Rt ~ global + date, data = data)
+    retail <- glm(Rt ~ retail, data = data)
+    grocery <- glm(Rt ~ grocery, data = data)
+    parks <- glm(Rt ~ parks, data = data)
+    transit <- glm(Rt ~ transit, data = data)
+    workplaces <- glm(Rt ~ workplaces, data = data)
+    residential <- glm(Rt ~ residential, data = data)
+    global <- glm(Rt ~ global, data = data)
   } else if(lag==7) {
-    retail <- lm(Rt ~ retail_lag7 + date, data = data)
-    grocery <- lm(Rt ~ grocery_lag7 + date, data = data)
-    parks <- lm(Rt ~ parks_lag7 + date, data = data)
-    transit <- lm(Rt ~ transit_lag7 + date, data = data)
-    workplaces <- lm(Rt ~ workplaces_lag7 + date, data = data)
-    residential <- lm(Rt ~ residential_lag7 + date, data = data)
-    global <- lm(Rt ~ global_lag7 + date, data = data)
+    retail <- glm(Rt ~ retail_lag7, data = data)
+    grocery <- glm(Rt ~ grocery_lag7, data = data)
+    parks <- glm(Rt ~ parks_lag7, data = data)
+    transit <- glm(Rt ~ transit_lag7, data = data)
+    workplaces <- glm(Rt ~ workplaces_lag7, data = data)
+    residential <- glm(Rt ~ residential_lag7, data = data)
+    global <- glm(Rt ~ global_lag7, data = data)
   } else if(lag==14) {
-    retail <- lm(Rt ~ retail_lag14 + date, data = data)
-    grocery <- lm(Rt ~ grocery_lag14 + date, data = data)
-    parks <- lm(Rt ~ parks_lag14 + date, data = data)
-    transit <- lm(Rt ~ transit_lag14 + date, data = data)
-    workplaces <- lm(Rt ~ workplaces_lag14 + date, data = data)
-    residential <- lm(Rt ~ residential_lag14 + date, data = data)
-    global <- lm(Rt ~ global_lag14 + date, data = data)
+    retail <- glm(Rt ~ retail_lag14, data = data)
+    grocery <- glm(Rt ~ grocery_lag14, data = data)
+    parks <- glm(Rt ~ parks_lag14, data = data)
+    transit <- glm(Rt ~ transit_lag14, data = data)
+    workplaces <- glm(Rt ~ workplaces_lag14, data = data)
+    residential <- glm(Rt ~ residential_lag14, data = data)
+    global <- glm(Rt ~ global_lag14, data = data)
   } else {
     stop('Must enter 0, 7, or 14')
   }
@@ -190,15 +189,15 @@ reg_coef <- function(data) {
       place[i] <- names(data)[j]
       mobility[i] <- names(loc)[k]
       coefficient[i] <- tidy(reg)[[2,2]]
-      r2[i] <- glance(reg)[[1,2]]
-      p_val[i] <- glance(reg)[[1,5]]
+      # r2[i] <- glance(reg)[[1,2]]
+      p_val[i] <- tidy(reg)[[2,5]]
       i=i+1
       k=k+1
     }
     j=j+1
     k=1
   }
-  df <- data.frame(place, mobility, coefficient, r2, p_val)
+  df <- data.frame(place, mobility, coefficient, p_val)
   return(df)
 }
 ```
@@ -224,21 +223,6 @@ p2 <- get_data(p_mob, p_rt, '2020-12-26', '2021-03-19', COLS)
 t2 <- get_data(t_mob, t_rt, '2020-12-26', '2021-03-19', COLS)
 h2 <- get_data(h_mob, h_rt, '2020-12-26', '2021-02-16', COLS)
 y2 <- get_data(y_mob, y_rt, '2020-12-26', '2021-02-22', COLS)
-```
-
-```{r}
-
-```
-
-
-```{r}
-# ggplot() +
-#   geom_point(d,
-#              mapping=aes(x=global, y=Rt)) +
-#   geom_smooth(d,
-#               mapping=aes(x=global, y=Rt),
-#               method='lm',
-#               formula = y ~ x + date)
 ```
 
 0 day lag
