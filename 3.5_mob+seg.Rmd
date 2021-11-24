@@ -282,7 +282,7 @@ get_graph2 <- function(region) {
     geom_vline(lines,
                mapping = aes(xintercept=Date_start),
                linetype = 'dashed') +
-    ylab('ΔGMI (%)') +
+    ylab('GMI change (%)') +
     scale_fill_manual(values=fill) +
     scale_x_date(date_breaks = "1 month") +
     theme_bw() +
@@ -332,7 +332,7 @@ y <- get_graph2('York')$comb
 l <- get_graph2('Durham')$l
 
 comb <- ggarrange(d, h, p, t, y, l, nrow = 3, ncol = 2)
-ggsave('graphs/mob+seg_combined.png', comb, height = 11, width = 8.5, units = 'in')
+ggsave('graphs/mob+seg_combined.pdf', comb, height = 11, width = 8.5, units = 'in')
 ```
 
 ```{r}

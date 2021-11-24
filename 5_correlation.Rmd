@@ -433,7 +433,7 @@ p <- ggplot(total_regression, aes(x=place, y=coefficient, fill=fct_relevel(mobil
   xlab('Public Health Unit') +
   ylab('Regression coefficient') +
   theme_bw()
-ggsave('graphs/reg_barplot.png',
+ggsave('graphs/reg_barplot.pdf',
        p,
        height = 8.5,
        width = 11,
@@ -457,7 +457,7 @@ p <- ggplot(d, aes(x=period, y=coefficient, group=place, color=place)) +
   xlab('Period') +
   ylab('Correlation coefficient') +
   theme_bw()
-ggsave('graphs/corr_lag_lineplot.png',
+ggsave('graphs/corr_lag_lineplot.pdf',
        p,
        height = 8.5,
        width = 11,
